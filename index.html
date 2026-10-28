@@ -1,0 +1,3576 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DataSince v5.0 — Enterprise</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg-dark: #0a0e27; --bg-mid: #141a35; --bg-light: #1a1f3a;
+      --cyan: #00d4ff; --magenta: #ff00e5; --green: #00ff88;
+      --yellow: #ffcc00; --red: #ff3366; --orange: #ff9900;
+      --text: #e4e8f5; --text-dim: #8892b0;
+      --glass: rgba(20, 26, 53, 0.7); --glass-border: rgba(0, 212, 255, 0.15);
+      --shadow: rgba(0, 0, 0, 0.4);
+    }
+
+    body.light-theme {
+      --bg-dark: #f0f4f8; --bg-mid: #e2e8f0; --bg-light: #ffffff;
+      --cyan: #0891b2; --magenta: #c026d3; --green: #059669;
+      --yellow: #d97706; --red: #dc2626; --text: #1e293b; --text-dim: #64748b;
+      --glass: rgba(255, 255, 255, 0.85); --glass-border: rgba(8, 145, 178, 0.2);
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-dark); color: var(--text);
+      min-height: 100vh; padding: 20px;
+      position: relative; overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body::before {
+      content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background-image: linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px; pointer-events: none; z-index: 0;
+    }
+
+    body::after {
+      content: ''; position: fixed; top: -50%; left: -50%; right: -50%; bottom: -50%;
+      background: radial-gradient(circle at 20% 20%, rgba(0,212,255,0.08) 0%, transparent 40%),
+                  radial-gradient(circle at 80% 80%, rgba(255,0,229,0.08) 0%, transparent 40%);
+      pointer-events: none; z-index: 0; animation: floatBg 20s ease-in-out infinite;
+    }
+
+    @keyframes floatBg { 0%,100% { transform: translate(0,0); } 50% { transform: translate(30px,-30px); } }
+
+    .container { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+
+    .login-container { display: flex; justify-content: center; align-items: center; min-height: 90vh; padding: 20px 0; }
+
+    .login-box {
+      background: var(--glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border); border-radius: 20px;
+      box-shadow: 0 20px 60px var(--shadow), 0 0 80px rgba(0,212,255,0.1);
+      padding: 40px; width: 100%; max-width: 450px;
+      position: relative; overflow: hidden; max-height: 95vh; overflow-y: auto;
+    }
+
+    .login-box.wide { max-width: 540px; }
+
+    .login-box::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), var(--magenta), transparent);
+      animation: scanline 3s linear infinite;
+    }
+
+    @keyframes scanline { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+    .login-box h1 {
+      text-align: center; margin-bottom: 8px; color: var(--text);
+      font-family: 'JetBrains Mono', monospace; font-size: 22px;
+      letter-spacing: 2px; text-shadow: 0 0 20px rgba(0,212,255,0.5);
+    }
+
+    .brand-sub { text-align: center; color: var(--text-dim); font-size: 11px;
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 3px;
+      margin-bottom: 25px; text-transform: uppercase; }
+
+    input, select, textarea {
+      width: 100%; padding: 12px 14px; margin: 8px 0;
+      background: rgba(10,14,39,0.8); border: 1px solid rgba(0,212,255,0.2);
+      border-radius: 10px; font-size: 16px; /* iOS da zoom bo'lmasligi uchun 16px */
+      color: var(--text); font-family: inherit; transition: all 0.3s;
+    }
+    body.light-theme input, body.light-theme select, body.light-theme textarea { background: rgba(255,255,255,0.9); }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(0,212,255,0.15), 0 0 20px rgba(0,212,255,0.2);
+    }
+    input::placeholder, textarea::placeholder { color: var(--text-dim); }
+    select option { background: var(--bg-light); color: var(--text); }
+    input[type="date"] { color-scheme: dark; }
+    body.light-theme input[type="date"] { color-scheme: light; }
+
+    button {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--cyan), var(--magenta));
+      color: #0a0e27; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 700; cursor: pointer; margin: 8px 0;
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
+      transition: all 0.3s; position: relative; overflow: hidden;
+    }
+    button::before {
+      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      transition: left 0.5s;
+    }
+    button:hover::before { left: 100%; }
+    button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,212,255,0.4); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-small { width: auto; padding: 8px 14px; font-size: 13px; margin: 2px; letter-spacing: 0.5px; }
+    .btn-icon { width: auto; padding: 10px 14px; font-size: 18px; background: var(--glass);
+      border: 1px solid var(--glass-border); color: var(--text); margin: 0; }
+    .btn-icon:hover { background: rgba(0,212,255,0.15); box-shadow: none; }
+    .btn-icon::before { display: none; }
+
+    .hidden { display: none !important; }
+
+    .header {
+      background: var(--glass); backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border); padding: 20px 25px;
+      border-radius: 16px; margin-bottom: 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 15px; box-shadow: 0 8px 32px var(--shadow);
+    }
+    .header-left { flex: 1; min-width: 200px; }
+    .header-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .header h2 { font-family: 'JetBrains Mono', monospace; font-size: 18px;
+      letter-spacing: 1px; color: var(--cyan); text-shadow: 0 0 15px rgba(0,212,255,0.5); }
+    .header-info { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 8px;
+      font-size: 12px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+    .header-info span { display: flex; align-items: center; gap: 4px; }
+
+    .position-badge {
+      display: inline-block; padding: 4px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1px; text-transform: uppercase; margin-left: 10px;
+    }
+    .position-badge.developer { background: rgba(0,212,255,0.15); color: var(--cyan); border: 1px solid rgba(0,212,255,0.3); }
+    .position-badge.designer { background: rgba(255,0,229,0.15); color: var(--magenta); border: 1px solid rgba(255,0,229,0.3); }
+    .position-badge.manager { background: rgba(0,255,136,0.15); color: var(--green); border: 1px solid rgba(0,255,136,0.3); }
+    .position-badge.accountant { background: rgba(255,204,0,0.15); color: var(--yellow); border: 1px solid rgba(255,204,0,0.3); }
+    .position-badge.sales { background: rgba(255,153,0,0.15); color: var(--orange); border: 1px solid rgba(255,153,0,0.3); }
+    .position-badge.hr { background: rgba(255,51,102,0.15); color: var(--red); border: 1px solid rgba(255,51,102,0.3); }
+    .position-badge.operator { background: rgba(136,146,176,0.15); color: var(--text-dim); border: 1px solid rgba(136,146,176,0.3); }
+    .position-badge.boss { background: linear-gradient(135deg,rgba(0,212,255,0.2),rgba(255,0,229,0.2)); color: var(--cyan); border: 1px solid var(--cyan); }
+
+    .notif-btn {
+      position: relative; width: 44px; height: 44px; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; border-radius: 50%;
+    }
+    .notif-count {
+      position: absolute; top: -4px; right: -4px; background: var(--red);
+      color: white; font-size: 10px; font-weight: 700;
+      min-width: 20px; height: 20px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 5px; font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* MOSLASHUVCHAN TABLAR (Skroll bo'ladigan) */
+    .tabs-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 20px;
+      padding-bottom: 5px;
+      scrollbar-width: none; /* Firefox */
+    }
+    .tabs-wrapper::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+    
+    .tabs { display: flex; gap: 8px; width: max-content; }
+    .tab {
+      background: var(--glass); backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border); padding: 12px 20px;
+      border-radius: 10px; cursor: pointer; transition: all 0.3s;
+      font-weight: 600; font-size: 14px; color: var(--text-dim); user-select: none;
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--text); border-color: rgba(0,212,255,0.4); transform: translateY(-2px); }
+    .tab.active {
+      background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(255,0,229,0.2));
+      border-color: var(--cyan); color: var(--cyan);
+      box-shadow: 0 0 20px rgba(0,212,255,0.3);
+    }
+
+    .content-card {
+      background: var(--glass); backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border); padding: 25px;
+      border-radius: 16px; margin-bottom: 20px;
+      box-shadow: 0 8px 32px var(--shadow);
+      animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .content-card h3 {
+      font-family: 'JetBrains Mono', monospace; color: var(--cyan);
+      font-size: 16px; letter-spacing: 1px; margin-bottom: 15px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap;
+    }
+    .content-card h4 { color: var(--text); font-size: 14px; margin-bottom: 10px;
+      font-family: 'JetBrains Mono', monospace; }
+
+    /* MOSLASHUVCHAN JADVALLAR */
+    .table-wrap { 
+      overflow-x: auto; 
+      -webkit-overflow-scrolling: touch;
+      max-height: 600px; 
+      overflow-y: auto; 
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid rgba(0,212,255,0.1); font-size: 14px; }
+    th {
+      background: rgba(0,212,255,0.08); color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      letter-spacing: 1px; text-transform: uppercase; font-weight: 700;
+      position: sticky; top: 0; z-index: 10;
+    }
+    tr:hover td { background: rgba(0,212,255,0.04); }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-card {
+      background: var(--glass); backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border); padding: 20px;
+      border-radius: 16px; text-align: center; position: relative;
+      overflow: hidden; transition: all 0.3s;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--cyan), var(--magenta)); opacity: 0.7;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(0,212,255,0.2); border-color: rgba(0,212,255,0.4); }
+    .stat-card > div:first-child { color: var(--text-dim); font-size: 12px;
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; text-transform: uppercase; }
+    .stat-value {
+      font-size: 36px; font-weight: 700; margin: 10px 0;
+      font-family: 'JetBrains Mono', monospace;
+      background: linear-gradient(135deg, var(--cyan), var(--magenta));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; text-shadow: 0 0 30px rgba(0,212,255,0.5);
+    }
+
+    .role-panel { background: rgba(10,14,39,0.5); border: 1px solid var(--glass-border);
+      border-radius: 12px; padding: 20px; margin-top: 15px; }
+    body.light-theme .role-panel { background: rgba(255,255,255,0.6); }
+    .role-panel h4 { color: var(--cyan); font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
+
+    .metric-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+      padding: 12px 0; border-bottom: 1px solid rgba(0,212,255,0.08); font-size: 14px; }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-label { color: var(--text-dim); }
+    .metric-value { color: var(--cyan); font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+
+    .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+    .status-dot.online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .status-dot.warning { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+    .status-dot.offline { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+    .badge {
+      display: inline-block; padding: 5px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.5px; white-space: nowrap;
+    }
+    .badge-success { background: rgba(0,255,136,0.15); color: var(--green); border: 1px solid rgba(0,255,136,0.3); }
+    .badge-warning { background: rgba(255,204,0,0.15); color: var(--yellow); border: 1px solid rgba(255,204,0,0.3); }
+    .badge-danger { background: rgba(255,51,102,0.15); color: var(--red); border: 1px solid rgba(255,51,102,0.3); }
+    .badge-info { background: rgba(0,212,255,0.15); color: var(--cyan); border: 1px solid rgba(0,212,255,0.3); }
+
+    .form-panel { margin: 15px 0; padding: 15px;
+      background: rgba(10,14,39,0.5); border-radius: 12px; border: 1px solid var(--glass-border); }
+    body.light-theme .form-panel { background: rgba(255,255,255,0.6); }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; align-items: end; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .qr-section { background: rgba(10,14,39,0.6); padding: 25px;
+      border-radius: 16px; text-align: center; border: 1px solid var(--glass-border); }
+    body.light-theme .qr-section { background: rgba(255,255,255,0.6); }
+    .qr-container { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin: 20px 0; }
+    .qr-box {
+      background: rgba(20,26,53,0.8); padding: 20px; border-radius: 12px;
+      text-align: center; border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 24px var(--shadow); width: 100%; max-width: 250px;
+    }
+    body.light-theme .qr-box { background: rgba(255,255,255,0.9); }
+    .qr-box h4 { color: var(--cyan); font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; }
+    #qrcode, .qr-box canvas, .qr-box img { background: white; padding: 8px; border-radius: 6px; display: inline-block; max-width: 100%; height: auto; }
+    .sync-id {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 12px;
+      background: rgba(10,14,39,0.9); border: 1px solid var(--glass-border);
+      border-radius: 8px; margin: 10px 0; word-break: break-all; color: var(--cyan);
+    }
+    body.light-theme .sync-id { background: rgba(255,255,255,0.9); }
+
+    .game-container {
+      text-align: center; padding: 20px;
+      background: rgba(10,14,39,0.9); border-radius: 16px;
+      border: 1px solid rgba(0,255,136,0.2); box-shadow: 0 0 60px rgba(0,255,136,0.1);
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .game-canvas {
+      border: 2px solid var(--green); border-radius: 10px;
+      margin: 15px auto; display: block; background: #0a0e27;
+      box-shadow: 0 0 30px rgba(0,255,136,0.3), inset 0 0 60px rgba(0,255,136,0.05);
+      max-width: 100%;
+    }
+
+    .register-link { text-align: center; margin-top: 15px; color: var(--cyan);
+      cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.3s; }
+    .register-link:hover { color: var(--magenta); text-shadow: 0 0 10px rgba(255,0,229,0.5); }
+
+    .error-text { color: var(--red); font-size: 12px; margin: -3px 0 5px 5px;
+      min-height: 16px; font-family: 'JetBrains Mono', monospace; }
+    .input-group { position: relative; margin: 8px 0; }
+    .input-group input { margin: 0; padding-right: 45px; }
+    .toggle-pass {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      cursor: pointer; font-size: 18px; user-select: none; opacity: 0.7; transition: opacity 0.3s;
+      padding: 10px;
+    }
+    .toggle-pass:hover { opacity: 1; }
+    .password-strength { height: 6px; border-radius: 3px; margin: 0 0 8px 0;
+      background: rgba(255,255,255,0.05); overflow: hidden; }
+    .password-strength-bar { height: 100%; width: 0; transition: all 0.3s; border-radius: 3px; }
+    .success-text { font-size: 13px; text-align: center; margin: 10px 0; font-family: 'JetBrains Mono', monospace; }
+
+    .info-box {
+      margin-top: 20px; padding: 15px;
+      background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 10px; font-size: 13px; color: var(--text-dim);
+    }
+    .info-box p { margin: 4px 0; }
+    .info-box strong { color: var(--cyan); }
+
+    .field-label { display: block; font-size: 12px; color: var(--text-dim);
+      margin: 8px 0 0 4px; font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1px; text-transform: uppercase; }
+
+    .log-item { padding: 12px; border-bottom: 1px solid rgba(0,212,255,0.08); font-size: 14px; }
+    .log-item:hover { background: rgba(0,212,255,0.03); }
+    .log-meta { display: flex; justify-content: space-between; flex-wrap: wrap;
+      gap: 5px; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    .log-action { color: var(--cyan); }
+    .log-time { color: var(--text-dim); }
+    .log-details { color: var(--text-dim); font-size: 13px; }
+
+    .device-item {
+      background: rgba(10,14,39,0.5); padding: 15px; border-radius: 12px;
+      border: 1px solid var(--glass-border); display: flex;
+      justify-content: space-between; align-items: center; transition: all 0.3s;
+      flex-wrap: wrap; gap: 10px;
+    }
+    body.light-theme .device-item { background: rgba(255,255,255,0.6); }
+    .device-item:hover { border-color: rgba(0,212,255,0.4); background: rgba(0,212,255,0.05); }
+    .device-icon { font-size: 28px; margin-right: 10px; }
+
+    .task-item {
+      display: flex; align-items: center; gap: 12px; padding: 15px;
+      background: rgba(10,14,39,0.5); border-radius: 10px; margin: 8px 0;
+      border: 1px solid var(--glass-border);
+    }
+    body.light-theme .task-item { background: rgba(255,255,255,0.6); }
+    .task-item.done { opacity: 0.6; }
+    .task-check {
+      width: 26px; height: 26px; border-radius: 6px;
+      border: 2px solid var(--cyan); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.3s;
+    }
+    .task-check.checked { background: var(--green); border-color: var(--green); }
+    .task-title { flex: 1; font-size: 15px; }
+    .task-title.done { text-decoration: line-through; color: var(--text-dim); }
+
+    .message-item {
+      display: flex; gap: 12px; padding: 15px;
+      background: rgba(10,14,39,0.5); border-radius: 10px; margin: 8px 0;
+      border: 1px solid var(--glass-border);
+    }
+    body.light-theme .message-item { background: rgba(255,255,255,0.6); }
+    .message-avatar {
+      width: 45px; height: 45px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--magenta));
+      display: flex; align-items: center; justify-content: center;
+      color: #0a0e27; font-weight: 700; flex-shrink: 0; font-size: 18px;
+    }
+    .message-body { flex: 1; }
+    .message-from { font-weight: 700; font-size: 14px; color: var(--cyan); }
+    .message-text { font-size: 14px; margin: 4px 0; }
+    .message-time { font-size: 12px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 15px; }
+    .calendar-day {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      background: rgba(10,14,39,0.5); border-radius: 6px; font-size: 14px;
+      cursor: pointer; border: 1px solid transparent; transition: all 0.3s;
+    }
+    body.light-theme .calendar-day { background: rgba(255,255,255,0.6); }
+    .calendar-day:hover { border-color: var(--cyan); }
+    .calendar-day.today { background: rgba(0,212,255,0.2); border-color: var(--cyan); font-weight: 700; }
+    .calendar-day.has-event { position: relative; }
+    .calendar-day.has-event::after {
+      content: ''; position: absolute; bottom: 4px;
+      width: 6px; height: 6px; border-radius: 50%; background: var(--magenta);
+    }
+    .calendar-header {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      color: var(--text-dim); text-align: center; font-weight: 700;
+    }
+
+    .avatar-large {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--magenta));
+      display: flex; align-items: center; justify-content: center;
+      color: #0a0e27; font-size: 40px; font-weight: 700;
+      margin: 0 auto 20px; box-shadow: 0 0 40px rgba(0,212,255,0.3);
+    }
+
+    .dashboard-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .chart-container {
+      background: rgba(10,14,39,0.5); border: 1px solid var(--glass-border);
+      border-radius: 12px; padding: 15px;
+    }
+    body.light-theme .chart-container { background: rgba(255,255,255,0.6); }
+    canvas.chart-canvas { width: 100%; max-width: 100%; display: block; }
+
+    .toast-container {
+      position: fixed; top: 20px; right: 20px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px; max-width: 400px;
+    }
+    .toast {
+      background: var(--glass); backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border); border-left: 4px solid var(--cyan);
+      padding: 15px 20px; border-radius: 12px;
+      box-shadow: 0 10px 40px var(--shadow); display: flex;
+      gap: 12px; align-items: flex-start; animation: slideIn 0.3s;
+      min-width: 250px;
+    }
+    .toast.success { border-left-color: var(--green); }
+    .toast.warning { border-left-color: var(--yellow); }
+    .toast.error { border-left-color: var(--red); }
+    .toast.info { border-left-color: var(--cyan); }
+    .toast-icon { font-size: 20px; flex-shrink: 0; }
+    .toast-content { flex: 1; }
+    .toast-title { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+    .toast-message { font-size: 13px; color: var(--text-dim); }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    .notif-panel {
+      position: fixed; top: 80px; right: 20px; width: 380px;
+      max-width: calc(100vw - 40px); max-height: 500px; overflow-y: auto;
+      background: var(--glass); backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border); border-radius: 16px;
+      box-shadow: 0 20px 60px var(--shadow); z-index: 9998;
+      animation: fadeIn 0.3s;
+    }
+    body.light-theme .notif-panel { background: rgba(255,255,255,0.95); }
+    .notif-panel-header {
+      padding: 15px 20px; border-bottom: 1px solid var(--glass-border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--cyan);
+    }
+    .notif-list { padding: 10px; }
+    .notif-item {
+      padding: 12px; border-radius: 10px; margin-bottom: 8px;
+      background: rgba(10,14,39,0.5); border-left: 3px solid var(--cyan);
+      cursor: pointer; transition: all 0.3s;
+    }
+    body.light-theme .notif-item { background: rgba(248,250,252,0.9); }
+    .notif-item:hover { background: rgba(0,212,255,0.1); }
+    .notif-item.unread { border-left-color: var(--magenta); }
+    .notif-item-title { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+    .notif-item-text { font-size: 13px; color: var(--text-dim); }
+    .notif-item-time { font-size: 12px; color: var(--text-dim); margin-top: 5px;
+      font-family: 'JetBrains Mono', monospace; }
+
+    .progress { height: 8px; background: rgba(0,212,255,0.1);
+      border-radius: 4px; overflow: hidden; margin-top: 8px; }
+    .progress-bar {
+      height: 100%; background: linear-gradient(90deg, var(--cyan), var(--magenta));
+      border-radius: 4px; transition: width 0.5s;
+    }
+
+    .global-search { position: relative; width: 100%; max-width: 400px; }
+    .global-search input { margin: 0; padding-left: 40px; }
+    .global-search::before {
+      content: '🔍'; position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%); font-size: 16px; pointer-events: none;
+    }
+    .search-results {
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: var(--glass); backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border); border-radius: 10px;
+      margin-top: 5px; max-height: 400px; overflow-y: auto;
+      z-index: 999; box-shadow: 0 10px 40px var(--shadow);
+    }
+    body.light-theme .search-results { background: rgba(255,255,255,0.98); }
+    .search-result-item {
+      padding: 12px 15px; border-bottom: 1px solid rgba(0,212,255,0.05);
+      cursor: pointer; font-size: 14px;
+    }
+    .search-result-item:hover { background: rgba(0,212,255,0.1); }
+    .search-result-type { font-size: 11px; color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace; }
+
+    /* DASTURCHI MONITORI */
+    .dev-monitor {
+      background: #000; border: 1px solid var(--green);
+      border-radius: 12px; padding: 0;
+      font-family: 'JetBrains Mono', monospace; font-size: 13px;
+      box-shadow: 0 0 30px rgba(0,255,136,0.2), inset 0 0 30px rgba(0,255,136,0.03);
+      overflow: hidden;
+    }
+    .dev-monitor-header {
+      background: rgba(0,255,136,0.1); padding: 12px 15px;
+      border-bottom: 1px solid rgba(0,255,136,0.3);
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--green); font-weight: 700; flex-wrap: wrap; gap: 10px;
+    }
+    .monitor-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .monitor-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .monitor-dot.yellow { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+    .monitor-dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+    .dev-console { background: #000; padding: 15px; max-height: 300px; overflow-y: auto; color: #00ff88; }
+    .console-line { padding: 4px 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; border-bottom: 1px solid rgba(0,255,136,0.05); word-break: break-all; }
+    .console-line.error { color: var(--red); }
+    .console-line.warn { color: var(--yellow); }
+    .console-line.info { color: var(--cyan); }
+    .console-line.log { color: #00ff88; }
+    .console-line.debug { color: #8892b0; }
+    .console-time { color: #8892b0; margin-right: 8px; }
+    .console-type { font-weight: 700; margin-right: 8px; }
+    .monitor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .monitor-card { background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.2); border-radius: 10px; padding: 15px; font-family: 'JetBrains Mono', monospace; }
+    .monitor-card-title { color: var(--green); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; display: flex; justify-content: space-between; }
+    .monitor-value { color: #fff; font-size: 26px; font-weight: 700; }
+    .monitor-sub { color: var(--text-dim); font-size: 12px; margin-top: 5px; }
+    .bar-mini { height: 8px; background: rgba(0,255,136,0.1); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+    .bar-mini-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--cyan)); transition: width 0.5s; }
+    .error-item { background: rgba(255,51,102,0.05); border-left: 4px solid var(--red); padding: 15px; margin-bottom: 10px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    .error-item.warning { border-left-color: var(--yellow); background: rgba(255,204,0,0.05); }
+    .error-item.info { border-left-color: var(--cyan); background: rgba(0,212,255,0.05); }
+    .error-header { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--red); font-weight: 700; }
+    .error-item.warning .error-header { color: var(--yellow); }
+    .error-item.info .error-header { color: var(--cyan); }
+    .error-body { color: var(--text); word-break: break-word; }
+    .error-stack { color: var(--text-dim); font-size: 11px; margin-top: 5px; white-space: pre-wrap; }
+
+    /* KPI */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+    .kpi-card { background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 20px; text-align: center; }
+    .kpi-value { font-size: 30px; font-weight: 700; font-family: 'JetBrains Mono', monospace; background: linear-gradient(135deg, var(--cyan), var(--magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .kpi-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-family: 'JetBrains Mono', monospace; }
+
+    /* BILIM BAZASI */
+    .kb-item { background: rgba(10,14,39,0.5); border: 1px solid var(--glass-border); border-radius: 10px; padding: 15px; margin: 10px 0; cursor: pointer; transition: all 0.3s; }
+    body.light-theme .kb-item { background: rgba(255,255,255,0.6); }
+    .kb-item:hover { border-color: var(--cyan); background: rgba(0,212,255,0.05); }
+    .kb-title { font-weight: 700; color: var(--cyan); margin-bottom: 5px; font-size: 15px; }
+    .kb-content { font-size: 14px; color: var(--text-dim); }
+
+    /* FEEDBACK */
+    .feedback-item { background: rgba(10,14,39,0.5); border: 1px solid var(--glass-border); border-radius: 10px; padding: 15px; margin: 10px 0; }
+    body.light-theme .feedback-item { background: rgba(255,255,255,0.6); }
+    .feedback-stars { color: var(--yellow); font-size: 18px; margin: 5px 0; }
+    .feedback-text { font-size: 14px; margin: 8px 0; }
+    .feedback-meta { font-size: 12px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+
+    @media print {
+      body { background: white !important; color: black !important; padding: 0; }
+      body::before, body::after { display: none; }
+      .header, .tabs-wrapper, button, .btn-icon { display: none !important; }
+      .content-card { box-shadow: none; border: 1px solid #ccc; background: white; }
+      th { background: #f0f0f0 !important; color: black !important; }
+      td { color: black !important; }
+    }
+
+    /* =========================================
+       MOSLASHUVCHANLIK (RESPONSIVE) QO'SHIMCHALARI
+       ========================================= */
+    @media (max-width: 768px) {
+      body { padding: 10px; }
+      
+      /* Bosh menyu */
+      .header { flex-direction: column; align-items: flex-start; padding: 15px; gap: 10px; }
+      .header-right { width: 100%; justify-content: space-between; }
+      .global-search { max-width: 100%; flex: 1; margin-right: 5px; }
+      .header-left h2 { font-size: 16px; }
+      .header-info { font-size: 11px; gap: 10px; }
+
+      /* Login */
+      .login-box { padding: 25px 20px; }
+      
+      /* Statistikalar */
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .stat-value { font-size: 28px; }
+      .stat-card { padding: 15px 10px; }
+
+      /* Tablar (skroll) */
+      .tab { padding: 10px 15px; font-size: 13px; }
+
+      /* Ichki panellar */
+      .content-card { padding: 15px; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .monitor-grid { grid-template-columns: 1fr 1fr; }
+      
+      /* Jadvallar */
+      table { min-width: 500px; }
+      
+      /* Bildirishnoma */
+      .notif-panel { width: calc(100vw - 20px); right: 10px; top: 70px; }
+      
+      /* Boshqa */
+      .avatar-large { width: 80px; height: 80px; font-size: 30px; }
+      .qr-box { max-width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .monitor-grid { grid-template-columns: 1fr; }
+      .header-right { flex-wrap: wrap; }
+      .global-search { order: -1; min-width: 100%; margin-bottom: 5px; }
+      .btn-icon { padding: 8px; font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div class="container">
+    <!-- LOGIN -->
+    <div id="loginScreen" class="login-container">
+      <div class="login-box">
+        <h1>◈ DATASINCE</h1>
+        <div class="brand-sub">// ENTERPRISE v5.0</div>
+        <input type="text" id="loginUsername" placeholder="Login" value="boshliq">
+        <input type="password" id="loginPassword" placeholder="Parol" value="boshliq123">
+        <button onclick="login()">▶ KIRISH</button>
+        <div class="register-link" onclick="showRegisterScreen()">
+          ⊕ Hisobingiz yo'qmi? Ro'yxatdan o'ting
+        </div>
+        
+        <button class="download-btn" onclick="downloadApp()">
+          ⬇️ Dasturni yuklab olish
+        </button>
+
+        <div class="info-box">
+          <p><strong>Login va parolni kiriting.</strong></p>
+          
+         
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerScreen" class="login-container hidden">
+      <div class="login-box wide">
+        <h1>◈ RO'YXATDAN O'TISH</h1>
+        <div class="brand-sub">// YANGI HISOB</div>
+
+        <input type="text" id="regLogin" placeholder="Login *" oninput="onRegInput()">
+        <div class="error-text" id="regLoginError"></div>
+        <input type="email" id="regEmail" placeholder="Email *" oninput="onRegInput()">
+        <div class="error-text" id="regEmailError"></div>
+        <input type="tel" id="regPhone" placeholder="Telefon *" oninput="onRegInput()">
+        <div class="error-text" id="regPhoneError"></div>
+        <input type="text" id="regFullname" placeholder="To'liq ism *" oninput="onRegInput()">
+        <div class="error-text" id="regFullnameError"></div>
+
+        <label class="field-label">Tug'ilgan sana</label>
+        <input type="date" id="regBirthdate" oninput="onRegInput()">
+        <div class="error-text" id="regBirthdateError"></div>
+
+        <label class="field-label">Lavozim *</label>
+        <select id="regPosition" onchange="onRegInput()">
+          <option value="">-- Lavozim tanlang --</option>
+          <option value="developer">💻 Dasturchi</option>
+          <option value="designer">🎨 Dizayner</option>
+          <option value="manager">📊 Menejer</option>
+          <option value="accountant">🧮 Buxgalter</option>
+          <option value="sales">💼 Sotuv menejeri</option>
+          <option value="hr">👥 HR mutaxassis</option>
+          <option value="operator">📞 Operator</option>
+          <option value="other">🔹 Boshqa</option>
+        </select>
+        <div class="error-text" id="regPositionError"></div>
+
+        <label class="field-label">Bo'lim</label>
+        <select id="regDepartment">
+          <option value="">-- Bo'lim tanlang --</option>
+          <option value="it">💻 IT</option>
+          <option value="sales">💼 Savdo</option>
+          <option value="marketing">📢 Marketing</option>
+          <option value="finance">💰 Moliya</option>
+          <option value="hr">👥 Kadrlar</option>
+          <option value="support">🎧 Qo'llab-quvvatlash</option>
+        </select>
+
+        <div class="input-group">
+          <input type="password" id="regPassword" placeholder="Parol *" oninput="onRegInput(); checkPasswordStrength()">
+          <span class="toggle-pass" onclick="togglePassword('regPassword', this)">👁️</span>
+        </div>
+        <div class="password-strength"><div class="password-strength-bar" id="passStrengthBar"></div></div>
+        <div class="error-text" id="regPasswordError"></div>
+
+        <div class="input-group">
+          <input type="password" id="regPasswordConfirm" placeholder="Parolni tasdiqlang *" oninput="onRegInput()">
+          <span class="toggle-pass" onclick="togglePassword('regPasswordConfirm', this)">👁️</span>
+        </div>
+        <div class="error-text" id="regPasswordConfirmError"></div>
+
+        <div class="success-text" id="regSuccessMsg"></div>
+
+        <button onclick="register()">⊕ RO'YXATDAN O'TISH</button>
+        <button onclick="showLoginScreen()" style="background: rgba(136,146,176,0.3); color: var(--text);">◀ ORQAGA</button>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div id="mainScreen" class="hidden">
+      <div class="header">
+        <div class="header-left">
+          <h2 id="welcomeMsg">◈ ASSALOMU ALAYKUM!</h2>
+          <div class="header-info">
+            <span id="headerClock">🕐 --:--:--</span>
+            <span id="headerDate">📅 --</span>
+            <span id="headerRole"></span>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="global-search">
+            <input type="text" id="globalSearch" placeholder="Qidiruv..." oninput="performGlobalSearch()" onblur="setTimeout(()=>closeSearch(),200)">
+            <div id="searchResults" class="search-results hidden"></div>
+          </div>
+          <button class="btn-icon notif-btn" onclick="toggleNotificationPanel()" title="Bildirishnomalar">
+            🔔<span class="notif-count hidden" id="notifCount">0</span>
+          </button>
+          <button class="btn-icon" onclick="toggleTheme()" title="Tema">🌙</button>
+          <button class="btn-icon" onclick="showProfile()" title="Profil">👤</button>
+          <button class="btn-small" onclick="logout()" style="background: var(--red); color: white;">CHIQISH</button>
+        </div>
+      </div>
+
+      <div id="notificationPanel" class="notif-panel hidden">
+        <div class="notif-panel-header">
+          <span>🔔 BILDIRISHNOMALAR</span>
+          <button class="btn-small" onclick="clearAllNotifications()" style="margin:0;width:auto;">Tozalash</button>
+        </div>
+        <div class="notif-list" id="notifList"></div>
+      </div>
+
+      <div class="stats-grid" id="statsGrid"></div>
+      
+      <!-- TABLAR O'RALGAN (SKROLL UCHUN) -->
+      <div class="tabs-wrapper">
+        <div class="tabs" id="tabsContainer"></div>
+      </div>
+
+      <!-- ============ DASHBOARD ============ -->
+      <div id="dashboardTab" class="content-card hidden">
+        <h3>◈ DASHBOARD</h3>
+        <div class="dashboard-grid">
+          <div class="chart-container">
+            <h4>📈 O'sish (7 kun)</h4>
+            <canvas id="chartDataGrowth" class="chart-canvas" height="200"></canvas>
+          </div>
+          <div class="chart-container">
+            <h4>📊 Rol statistikasi</h4>
+            <canvas id="chartRoles" class="chart-canvas" height="200"></canvas>
+          </div>
+          <div class="chart-container">
+            <h4>✅ Kunlik maqsadlar</h4>
+            <div id="goalsList"></div>
+          </div>
+          <div class="chart-container">
+            <h4>🕐 So'nggi harakatlar</h4>
+            <div id="recentActivities"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ KPI ============ -->
+      <div id="kpiTab" class="content-card hidden">
+        <h3>◈ KPI DASHBOARD</h3>
+        <div class="kpi-grid" id="kpiGrid"></div>
+      </div>
+
+      <!-- ============ DEV MONITOR ============ -->
+      <div id="devmonitorTab" class="content-card hidden">
+        <h3>◈ XATOLAR MONITORI <span class="badge badge-danger" style="font-size:10px;">DEV ONLY</span></h3>
+
+        <div class="monitor-grid">
+          <div class="monitor-card">
+            <div class="monitor-card-title"><span>🐛 XATOLAR</span><span id="errorBadge">0</span></div>
+            <div class="monitor-value" id="monitorErrors" style="color:var(--red);">0</div>
+            <div class="monitor-sub">Oxirgi soat</div>
+            <div class="bar-mini"><div class="bar-mini-fill" id="errorBar" style="width:0%;background:var(--red);"></div></div>
+          </div>
+          <div class="monitor-card">
+            <div class="monitor-card-title"><span>⚠️ OGOHLANTIRISHLAR</span></div>
+            <div class="monitor-value" id="monitorWarns" style="color:var(--yellow);">0</div>
+            <div class="monitor-sub">Oxirgi soat</div>
+            <div class="bar-mini"><div class="bar-mini-fill" id="warnBar" style="width:0%;background:var(--yellow);"></div></div>
+          </div>
+          <div class="monitor-card">
+            <div class="monitor-card-title"><span>⚡ PERFORMANCE</span></div>
+            <div class="monitor-value" id="monitorPerf" style="color:var(--green);">0ms</div>
+            <div class="monitor-sub">O'rtacha javob</div>
+            <div class="bar-mini"><div class="bar-mini-fill" id="perfBar" style="width:0%;"></div></div>
+          </div>
+          <div class="monitor-card">
+            <div class="monitor-card-title"><span>💾 STORAGE</span></div>
+            <div class="monitor-value" id="monitorStorage" style="color:var(--cyan);">0KB</div>
+            <div class="monitor-sub">localStorage</div>
+            <div class="bar-mini"><div class="bar-mini-fill" id="storageBar" style="width:0%;background:var(--cyan);"></div></div>
+          </div>
+        </div>
+
+        <div class="dev-monitor">
+          <div class="dev-monitor-header">
+            <span><span class="monitor-dot green"></span>CONSOLE OUTPUT</span>
+            <div>
+              <button class="btn-small" onclick="clearConsole()" style="margin:0;width:auto;background:rgba(0,255,136,0.2);color:var(--green);">Tozalash</button>
+              <button class="btn-small" onclick="exportConsoleLog()" style="margin:0;width:auto;background:rgba(0,212,255,0.2);color:var(--cyan);">Eksport</button>
+            </div>
+          </div>
+          <div class="dev-console" id="devConsole"></div>
+        </div>
+
+        <div class="role-panel" style="margin-top:20px;">
+          <h4>🐛 XATOLAR RO'YXATI</h4>
+          <div id="errorsList"></div>
+        </div>
+
+        <div class="role-panel" style="margin-top:20px;">
+          <h4>🔌 API SO'ROVLAR</h4>
+          <div id="apiList"></div>
+        </div>
+
+        <div class="role-panel" style="margin-top:20px;">
+          <h4>🧪 TEST RUNNER</h4>
+          <div class="btn-row">
+            <button class="btn-small" onclick="runTests()" style="background:linear-gradient(135deg,var(--green),var(--cyan));">▶ Barcha testlarni ishga tushirish</button>
+            <button class="btn-small" onclick="clearTests()" style="background:rgba(136,146,176,0.3);">Tozalash</button>
+          </div>
+          <div id="testResults" style="margin-top:15px;"></div>
+        </div>
+
+        <div class="role-panel" style="margin-top:20px;">
+          <h4>💾 LOCALSTORAGE KEYS</h4>
+          <div id="storageKeys"></div>
+        </div>
+      </div>
+
+      <!-- ============ AUDIT ============ -->
+      <div id="auditTab" class="content-card hidden">
+        <h3>◈ AUDIT LOG</h3>
+        <div class="form-row" style="margin-bottom:15px;">
+          <select id="auditFilter" onchange="loadAuditLog()">
+            <option value="all">Barcha harakatlar</option>
+            <option value="kirish">Kirish</option>
+            <option value="chiqish">Chiqish</option>
+            <option value="qoshish">Qo'shish</option>
+            <option value="tahrirlash">Tahrirlash</option>
+            <option value="ochirish">O'chirish</option>
+          </select>
+          <button onclick="exportAuditLog()" style="background:linear-gradient(135deg,var(--green),var(--cyan));">📤 Eksport</button>
+        </div>
+        <div id="auditList"></div>
+      </div>
+
+      <!-- ============ SECURITY ============ -->
+      <div id="securityTab" class="content-card hidden">
+        <h3>◈ XAVFSIZLIK MARKAZI</h3>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-label">Faol sessiyalar</div><div class="kpi-value" id="secSessions">1</div></div>
+          <div class="kpi-card"><div class="kpi-label">Bloklangan urinishlar</div><div class="kpi-value" id="secBlocked">0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Oxirgi kirish</div><div class="kpi-value" id="secLastLogin" style="font-size:14px;">-</div></div>
+          <div class="kpi-card"><div class="kpi-label">Xavfsizlik holati</div><div class="kpi-value" id="secStatus" style="color:var(--green);">✓</div></div>
+        </div>
+        <div class="role-panel">
+          <h4>◈ Xavfsizlik tekshiruvlari</h4>
+          <div class="metric-row"><span class="metric-label"><span class="status-dot online"></span> HTTPS</span><span class="metric-value">✓</span></div>
+          <div class="metric-row"><span class="metric-label"><span class="status-dot online"></span> Parol kuchi</span><span class="metric-value">✓</span></div>
+          <div class="metric-row"><span class="metric-label"><span class="status-dot online"></span> SQL injection himoyasi</span><span class="metric-value">✓</span></div>
+          <div class="metric-row"><span class="metric-label"><span class="status-dot online"></span> XSS himoyasi</span><span class="metric-value">✓</span></div>
+          <div class="metric-row"><span class="metric-label"><span class="status-dot warning"></span> 2FA</span><span class="metric-value" style="color:var(--yellow);">-</span></div>
+        </div>
+      </div>
+
+      <!-- ============ DATA ============ -->
+      <div id="dataTab" class="content-card hidden">
+        <h3>◈ MA'LUMOTLAR <button class="btn-small" onclick="window.print()" style="background:var(--green);">🖨️</button></h3>
+        <input type="text" id="searchData" placeholder="🔍 Qidirish..." onkeyup="filterData()">
+        <div class="form-panel">
+          <input type="text" id="dataTitle" placeholder="Sarlavha">
+          <textarea id="dataValue" placeholder="Qiymat" rows="3"></textarea>
+          <div class="btn-row">
+            <button onclick="saveData()">▸ Saqlash</button>
+            <button id="cancelEditBtn" onclick="cancelEdit()" style="background: rgba(136,146,176,0.3); color: var(--text); display: none;">✕ Bekor</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Sarlavha</th><th>Qiymat</th><th>Qo'shgan</th><th>Sana</th><th>⭐</th><th>Amallar</th></tr></thead>
+            <tbody id="dataTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ ARCHIVE ============ -->
+      <div id="archiveTab" class="content-card hidden">
+        <h3>◈ ARXIV</h3>
+        <input type="text" id="searchArchive" placeholder="🔍 Qidirish..." onkeyup="filterArchive()">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Sarlavha</th><th>Qiymat</th><th>Arxivlagan</th><th>Sana</th><th>Amallar</th></tr></thead>
+            <tbody id="archiveTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ TASKS ============ -->
+      <div id="tasksTab" class="content-card hidden">
+        <h3>◈ VAZIFALAR</h3>
+        <div class="form-panel">
+          <div class="form-row">
+            <input type="text" id="taskTitle" placeholder="Yangi vazifa">
+            <select id="taskPriority">
+              <option value="low">🟢 Past</option>
+              <option value="medium">🟡 O'rta</option>
+              <option value="high">🔴 Yuqori</option>
+            </select>
+            <button onclick="addTask()">+ Qo'shish</button>
+          </div>
+        </div>
+        <div id="tasksList"></div>
+      </div>
+
+      <!-- ============ MESSAGES ============ -->
+      <div id="messagesTab" class="content-card hidden">
+        <h3>◈ XABARLAR</h3>
+        <div class="form-panel">
+          <input type="text" id="msgTo" placeholder="Kimga (login)">
+          <textarea id="msgText" placeholder="Xabar matni" rows="3"></textarea>
+          <button onclick="sendMessage()">▸ Yuborish</button>
+        </div>
+        <h4 style="margin-top:20px;">📥 Kelgan</h4>
+        <div id="messagesInbox"></div>
+        <h4 style="margin-top:20px;">📤 Yuborilgan</h4>
+        <div id="messagesSent"></div>
+      </div>
+
+      <!-- ============ CALENDAR ============ -->
+      <div id="calendarTab" class="content-card hidden">
+        <h3>◈ KALENDAR
+          <div>
+            <button class="btn-small" onclick="changeMonth(-1)">◀</button>
+            <span id="calendarMonth" style="font-family:monospace;margin:0 10px;"></span>
+            <button class="btn-small" onclick="changeMonth(1)">▶</button>
+          </div>
+        </h3>
+        <div class="calendar-header"><div>Du</div><div>Se</div><div>Ch</div><div>Pa</div><div>Ju</div><div>Sh</div><div>Ya</div></div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="form-panel" style="margin-top:20px;">
+          <h4>+ Voqea qo'shish</h4>
+          <input type="date" id="eventDate">
+          <input type="text" id="eventTitle" placeholder="Voqea nomi">
+          <button onclick="addEvent()">+ Qo'shish</button>
+        </div>
+        <div id="eventsList"></div>
+      </div>
+
+      <!-- ============ EMPLOYEES ============ -->
+      <div id="employeesTab" class="content-card hidden">
+        <h3>◈ XODIMLAR</h3>
+        <div class="form-panel">
+          <h4>+ Yangi xodim</h4>
+          <input type="text" id="empLogin" placeholder="Login *">
+          <input type="password" id="empPassword" placeholder="Parol *">
+          <input type="text" id="empName" placeholder="To'liq ism">
+          <input type="email" id="empEmail" placeholder="Email">
+          <input type="tel" id="empPhone" placeholder="Telefon">
+          <select id="empPosition">
+            <option value="">-- Lavozim --</option>
+            <option value="developer">💻 Dasturchi</option>
+            <option value="designer">🎨 Dizayner</option>
+            <option value="manager">📊 Menejer</option>
+            <option value="accountant">🧮 Buxgalter</option>
+            <option value="sales">💼 Sotuv menejeri</option>
+            <option value="hr">👥 HR mutaxassis</option>
+            <option value="operator">📞 Operator</option>
+            <option value="other">🔹 Boshqa</option>
+          </select>
+          <select id="empStatus">
+            <option value="active">✅ Ishda</option>
+            <option value="vacation">🏖️ Ta'tilda</option>
+            <option value="blocked">🔒 Bloklangan</option>
+          </select>
+          <button onclick="addEmployee()">+ Qo'shish</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Login</th><th>Ism</th><th>Email</th><th>Lavozim</th><th>Status</th><th>Amallar</th></tr></thead>
+            <tbody id="employeesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ VACATION ============ -->
+      <div id="vacationTab" class="content-card hidden">
+        <h3>◈ TA'TIL BOSHQARUVI</h3>
+        <div class="form-panel">
+          <select id="vacationEmployee"><option value="">-- Tanlang --</option></select>
+          <input type="date" id="vacationStart">
+          <input type="date" id="vacationEnd">
+          <button onclick="startVacation()">🏖️ Chiqarish</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Xodim</th><th>Boshlanish</th><th>Tugash</th><th>Qolgan kun</th><th>Amallar</th></tr></thead>
+            <tbody id="vacationTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ DEVICES ============ -->
+      <div id="devicesTab" class="content-card hidden">
+        <h3>◈ QURILMALAR</h3>
+        <div class="form-panel">
+          <input type="text" id="deviceName" placeholder="Qurilma nomi">
+          <select id="deviceType">
+            <option value="computer">💻 Kompyuter</option>
+            <option value="phone">📱 Telefon</option>
+            <option value="tablet">📟 Planshet</option>
+          </select>
+          <button onclick="addDevice()">+ Qo'shish</button>
+        </div>
+        <div id="devicesList" style="display: grid; gap: 12px;"></div>
+      </div>
+
+      <!-- ============ SYSTEM ============ -->
+      <div id="systemTab" class="content-card hidden">
+        <h3>◈ TIZIM HOLATI</h3>
+        <div class="stats-grid">
+          <div class="stat-card"><div>◈ CPU</div><div class="stat-value" id="sysCpu">0%</div></div>
+          <div class="stat-card"><div>◈ RAM</div><div class="stat-value" id="sysRam">0%</div></div>
+          <div class="stat-card"><div>◈ DISK</div><div class="stat-value" id="sysDisk">0%</div></div>
+          <div class="stat-card"><div>◈ UPTIME</div><div class="stat-value" id="sysUptime" style="font-size:24px;">0s</div></div>
+        </div>
+        <div class="role-panel">
+          <h4>◈ Xizmatlar</h4>
+          <div id="sysServices"></div>
+        </div>
+        <div class="role-panel">
+          <h4>◈ Hodisalar</h4>
+          <div id="sysEvents" style="font-family:monospace;font-size:13px;"></div>
+        </div>
+      </div>
+
+      <!-- ============ DESIGN ============ -->
+      <div id="designTab" class="content-card hidden">
+        <h3>◈ DIZAYN RESURSLARI</h3>
+        <div class="role-panel">
+          <h4>◈ Aktiv loyihalar</h4>
+          <div class="metric-row"><span class="metric-label">🎨 Logotip v2.0</span><span class="metric-value">FAOL</span></div>
+          <div class="metric-row"><span class="metric-label">📱 Mobil UI</span><span class="metric-value">FAOL</span></div>
+          <div class="metric-row"><span class="metric-label">🖥️ Dashboard</span><span class="metric-value">REVIEW</span></div>
+        </div>
+        <div class="role-panel">
+          <h4>◈ Rang palitrasi</h4>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+            <div style="width:50px;height:50px;border-radius:8px;background:#00d4ff;"></div>
+            <div style="width:50px;height:50px;border-radius:8px;background:#ff00e5;"></div>
+            <div style="width:50px;height:50px;border-radius:8px;background:#00ff88;"></div>
+            <div style="width:50px;height:50px;border-radius:8px;background:#ffcc00;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PROJECTS ============ -->
+      <div id="projectsTab" class="content-card hidden">
+        <h3>◈ LOYIHALAR</h3>
+        <div class="form-panel">
+          <input type="text" id="projName" placeholder="Loyiha nomi">
+          <input type="text" id="projManager" placeholder="Mas'ul">
+          <select id="projStatus">
+            <option value="active">🟢 Faol</option>
+            <option value="review">🟡 Review</option>
+            <option value="done">✅ Bajarilgan</option>
+          </select>
+          <button onclick="addProject()">+ Qo'shish</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Loyiha</th><th>Mas'ul</th><th>Status</th><th>Sana</th><th>Amallar</th></tr></thead>
+            <tbody id="projectsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ FINANCE ============ -->
+      <div id="financeTab" class="content-card hidden">
+        <h3>◈ MOLIYA</h3>
+        <div class="stats-grid">
+          <div class="stat-card"><div>◈ DAROMAD</div><div class="stat-value" id="finIncome">0</div></div>
+          <div class="stat-card"><div>◈ XARAJAT</div><div class="stat-value" id="finExpense">0</div></div>
+          <div class="stat-card"><div>◈ FOYDA</div><div class="stat-value" id="finProfit">0</div></div>
+        </div>
+        <div class="form-panel">
+          <input type="text" id="finTitle" placeholder="Tavsif">
+          <input type="number" id="finAmount" placeholder="Summa">
+          <select id="finType">
+            <option value="income">🟢 Daromad</option>
+            <option value="expense">🔴 Xarajat</option>
+          </select>
+          <button onclick="addFinance()">+ Qo'shish</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Tavsif</th><th>Turi</th><th>Summa</th><th>Sana</th><th>Amallar</th></tr></thead>
+            <tbody id="financeTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ CLIENTS ============ -->
+      <div id="clientsTab" class="content-card hidden">
+        <h3>◈ MIJOZLAR</h3>
+        <div class="form-panel">
+          <input type="text" id="clientName" placeholder="Ism">
+          <input type="tel" id="clientPhone" placeholder="Telefon">
+          <input type="text" id="clientCompany" placeholder="Kompaniya">
+          <button onclick="addClient()">+ Qo'shish</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Ism</th><th>Telefon</th><th>Kompaniya</th><th>Sana</th><th>Amallar</th></tr></thead>
+            <tbody id="clientsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ HIRE ============ -->
+      <div id="hireTab" class="content-card hidden">
+        <h3>◈ ISHGA QABUL</h3>
+        <div class="form-panel">
+          <input type="text" id="hireName" placeholder="Nomzod">
+          <input type="text" id="hirePosition" placeholder="Lavozim">
+          <input type="tel" id="hirePhone" placeholder="Telefon">
+          <select id="hireStatus">
+            <option value="new">🆕 Yangi</option>
+            <option value="interview">📞 Suhbat</option>
+            <option value="hired">✅ Qabul</option>
+            <option value="rejected">❌ Rad</option>
+          </select>
+          <button onclick="addCandidate()">+ Qo'shish</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Ism</th><th>Lavozim</th><th>Telefon</th><th>Status</th><th>Amallar</th></tr></thead>
+            <tbody id="hireTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ CALLS ============ -->
+      <div id="callsTab" class="content-card hidden">
+        <h3>◈ QO'NG'IROQLAR</h3>
+        <div class="form-panel">
+          <input type="text" id="callFrom" placeholder="Kimdan">
+          <input type="text" id="callTopic" placeholder="Mavzu">
+          <select id="callStatus">
+            <option value="new">🆕 Yangi</option>
+            <option value="progress">🔄 Jarayonda</option>
+            <option value="done">✅ Hal</option>
+          </select>
+          <button onclick="addCall()">+ Qo'shish</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Kimdan</th><th>Mavzu</th><th>Status</th><th>Sana</th><th>Amallar</th></tr></thead>
+            <tbody id="callsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ FEEDBACK ============ -->
+      <div id="feedbackTab" class="content-card hidden">
+        <h3>◈ FEEDBACK</h3>
+        <div class="form-panel">
+          <h4>Yangi fikr qoldirish</h4>
+          <select id="feedbackStars">
+            <option value="5">⭐⭐⭐⭐⭐ Ajoyib</option>
+            <option value="4">⭐⭐⭐⭐ Yaxshi</option>
+            <option value="3">⭐⭐⭐ O'rtacha</option>
+            <option value="2">⭐⭐ Yomon</option>
+            <option value="1">⭐ Juda yomon</option>
+          </select>
+          <textarea id="feedbackText" placeholder="Fikringiz..." rows="3"></textarea>
+          <button onclick="addFeedback()">▸ Yuborish</button>
+        </div>
+        <div id="feedbackList"></div>
+      </div>
+
+      <!-- ============ KNOWLEDGE BASE ============ -->
+      <div id="knowledgeTab" class="content-card hidden">
+        <h3>◈ BILIM BAZASI</h3>
+        <div class="form-panel">
+          <input type="text" id="kbTitle" placeholder="Sarlavha">
+          <textarea id="kbContent" placeholder="Matn..." rows="3"></textarea>
+          <button onclick="addKnowledge()">+ Qo'shish</button>
+        </div>
+        <div id="kbList"></div>
+      </div>
+
+      <!-- ============ FAVORITES ============ -->
+      <div id="favoritesTab" class="content-card hidden">
+        <h3>◈ SEVIMLILAR</h3>
+        <div id="favoritesList"></div>
+      </div>
+
+      <!-- ============ PROFILE ============ -->
+      <div id="profileTab" class="content-card hidden">
+        <h3>◈ PROFIL</h3>
+        <div class="avatar-large" id="profileAvatar">?</div>
+        <div class="form-panel">
+          <h4>👤 Ma'lumotlar</h4>
+          <div class="metric-row"><span class="metric-label">Login</span><span class="metric-value" id="profLogin">-</span></div>
+          <div class="metric-row"><span class="metric-label">Ism</span><span class="metric-value" id="profName">-</span></div>
+          <div class="metric-row"><span class="metric-label">Lavozim</span><span class="metric-value" id="profPosition">-</span></div>
+          <div class="metric-row"><span class="metric-label">Email</span><span class="metric-value" id="profEmail">-</span></div>
+          <div class="metric-row"><span class="metric-label">Telefon</span><span class="metric-value" id="profPhone">-</span></div>
+        </div>
+        <div class="form-panel">
+          <h4>🔐 Parol</h4>
+          <input type="password" id="oldPass" placeholder="Eski parol">
+          <input type="password" id="newPass" placeholder="Yangi parol">
+          <input type="password" id="newPassConfirm" placeholder="Tasdiqlang">
+          <button onclick="changePassword()">▸ O'zgartirish</button>
+        </div>
+      </div>
+
+      <!-- ============ SYNC ============ -->
+      <div id="syncTab" class="content-card hidden">
+        <div class="qr-section">
+          <h3>◈ SINXRONLASH</h3>
+          <div class="qr-container">
+            <div class="qr-box">
+              <h4>◈ SYNC ID</h4>
+              <div class="sync-id" id="syncIdDisplay">Loading...</div>
+              <button onclick="copySyncId()" class="btn-small">▸ Nusxalash</button>
+            </div>
+            <div class="qr-box">
+              <h4>◈ QR KOD</h4>
+              <div id="qrcode"></div>
+            </div>
+          </div>
+          <div class="form-panel">
+            <h4>◈ EKSPORT / IMPORT</h4>
+            <div class="btn-row">
+              <button onclick="exportAllData()" style="background: linear-gradient(135deg, #00ff88, #00d4ff);">▸ Eksport</button>
+              <input type="file" id="importFile" accept=".json" style="display: none;">
+              <button onclick="document.getElementById('importFile').click()" style="background: linear-gradient(135deg, #ff00e5, #ffcc00);">▸ Import</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ LOGS ============ -->
+      <div id="logsTab" class="content-card hidden">
+        <h3>◈ LOGLAR</h3>
+        <select id="logFilter" onchange="loadLogs()">
+          <option value="all">Barcha</option>
+          <option value="kirish">Kirish</option>
+          <option value="chiqish">Chiqish</option>
+          <option value="qoshish">Qo'shish</option>
+          <option value="tahrirlash">Tahrirlash</option>
+          <option value="ochirish">O'chirish</option>
+          <option value="xato">Xato</option>
+        </select>
+        <div id="logsList" style="max-height: 500px; overflow-y: auto; margin-top: 15px;"></div>
+      </div>
+    </div>
+
+    <!-- VACATION GAME -->
+    <div id="vacationGameScreen" class="hidden">
+      <div class="content-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+          <h2 style="font-family: 'JetBrains Mono', monospace; color: var(--green);">◈ TA'TIL REJIMI</h2>
+          <button onclick="exitVacationMode()" class="btn-small" style="background: var(--red); color: white; width: auto;">◀ CHIQISH</button>
+        </div>
+        <div style="text-align: center;">
+          <p style="font-size: 20px; font-family: 'JetBrains Mono', monospace; color: var(--cyan);" id="vacationUserName">User</p>
+          <div class="stats-grid" style="max-width: 400px; margin: 20px auto;">
+            <div class="stat-card"><div>◈ COINLAR</div><div class="stat-value" id="vacationCoins">0</div></div>
+            <div class="stat-card"><div>◈ YUTUQLAR</div><div class="stat-value" id="vacationWins">0</div></div>
+          </div>
+          <div class="game-container">
+            <canvas id="gameCanvas" width="300" height="500" class="game-canvas"></canvas>
+            <div style="margin-top: 15px;">
+              <button onclick="startGame()" class="btn-small" style="background: linear-gradient(135deg, #00ff88, #00d4ff); width: auto;">▶ YANGI O'YIN</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== KONFIG ====================
+    const STORAGE_KEYS = {
+      DATA: 'ds_data', ARCHIVE: 'ds_archive', EMPLOYEES: 'ds_employees',
+      VACATIONS: 'ds_vacations', DEVICES: 'ds_devices', LOGS: 'ds_logs',
+      COINS: 'ds_coins', GAMES_WON: 'ds_games', SYNC_ID: 'ds_sync_id',
+      PROJECTS: 'ds_projects', FINANCE: 'ds_finance', CLIENTS: 'ds_clients',
+      HIRES: 'ds_hires', CALLS: 'ds_calls', TASKS: 'ds_tasks',
+      MESSAGES: 'ds_messages', NOTIFICATIONS: 'ds_notif', FAVORITES: 'ds_favorites',
+      EVENTS: 'ds_events', THEME: 'ds_theme',
+      FEEDBACK: 'ds_feedback', KNOWLEDGE: 'ds_knowledge',
+      ERRORS: 'ds_errors', CONSOLE: 'ds_console', API_LOGS: 'ds_api_logs',
+      TEST_RESULTS: 'ds_test_results', SESSIONS: 'ds_sessions'
+    };
+
+    const RESERVED_LOGINS = ['boshliq', 'admin', 'vacation'];
+
+    const POSITION_CONFIG = {
+      boss: { name: 'Boshliq', icon: '👔', badgeClass: 'boss',
+        stats: ['data', 'archive', 'employees', 'devices'],
+        tabs: ['dashboard', 'kpi', 'data', 'audit', 'security', 'tasks', 'messages', 'calendar',
+               'archive', 'employees', 'vacation', 'devices', 'system', 'design', 'projects',
+               'finance', 'clients', 'hire', 'calls', 'feedback', 'knowledge', 'favorites', 'profile', 'sync', 'logs'] },
+      developer: { name: 'Dasturchi', icon: '💻', badgeClass: 'developer',
+        stats: ['data', 'devices'],
+        tabs: ['dashboard', 'data', 'tasks', 'devmonitor', 'system', 'devices', 'messages',
+               'security', 'knowledge', 'favorites', 'profile', 'sync', 'logs'] },
+      designer: { name: 'Dizayner', icon: '🎨', badgeClass: 'designer',
+        stats: ['data', 'archive'],
+        tabs: ['dashboard', 'data', 'tasks', 'design', 'messages', 'archive',
+               'feedback', 'knowledge', 'favorites', 'profile'] },
+      manager: { name: 'Menejer', icon: '📊', badgeClass: 'manager',
+        stats: ['data', 'employees'],
+        tabs: ['dashboard', 'kpi', 'data', 'tasks', 'projects', 'messages', 'calendar',
+               'employees', 'vacation', 'feedback', 'knowledge', 'favorites', 'profile'] },
+      accountant: { name: 'Buxgalter', icon: '🧮', badgeClass: 'accountant',
+        stats: ['data', 'archive'],
+        tabs: ['dashboard', 'data', 'tasks', 'finance', 'messages', 'archive',
+               'knowledge', 'favorites', 'profile'] },
+      sales: { name: 'Sotuv menejeri', icon: '💼', badgeClass: 'sales',
+        stats: ['data', 'devices'],
+        tabs: ['dashboard', 'data', 'tasks', 'clients', 'messages', 'devices',
+               'feedback', 'knowledge', 'favorites', 'profile'] },
+      hr: { name: 'HR mutaxassis', icon: '👥', badgeClass: 'hr',
+        stats: ['data', 'employees'],
+        tabs: ['dashboard', 'data', 'tasks', 'employees', 'vacation', 'hire', 'messages',
+               'calendar', 'knowledge', 'favorites', 'profile'] },
+      operator: { name: 'Operator', icon: '📞', badgeClass: 'operator',
+        stats: ['data'],
+        tabs: ['dashboard', 'data', 'tasks', 'calls', 'clients', 'messages',
+               'knowledge', 'favorites', 'profile'] },
+      other: { name: 'Xodim', icon: '🔹', badgeClass: 'operator',
+        stats: ['data'],
+        tabs: ['dashboard', 'data', 'tasks', 'messages', 'knowledge', 'favorites', 'profile'] }
+    };
+
+    const TAB_INFO = {
+      dashboard: 'Dashboard', kpi: 'KPI', data: "Ma'lumotlar", archive: 'Arxiv',
+      employees: 'Xodimlar', vacation: "Ta'til", devices: 'Qurilmalar',
+      system: 'Tizim', design: 'Dizayn', projects: 'Loyihalar', finance: 'Moliya',
+      clients: 'Mijozlar', hire: 'Ishga qabul', calls: "Qo'ng'iroqlar",
+      tasks: 'Vazifalar', messages: 'Xabarlar', calendar: 'Kalendar',
+      favorites: 'Sevimlilar', profile: 'Profil', sync: 'Sinxron', logs: 'Loglar',
+      feedback: 'Feedback', knowledge: 'Bilim', audit: 'Audit', security: 'Xavfsizlik',
+      devmonitor: 'Dev Monitor'
+    };
+
+    let currentUser = null;
+    let editDataId = null;
+    let loginCheckTimer = null, emailCheckTimer = null;
+    let sysMonitorInterval = null, clockInterval = null, devMonitorInterval = null;
+    let sysStartTime = null;
+    let calendarDate = new Date();
+    let isNotifPanelOpen = false;
+    let performanceMetrics = { requests: [], avgResponse: 0 };
+
+    // Tetris
+    let canvas = null, ctx = null, board = [], piece = null, score = 0, gameLoop = null, gameActive = false;
+    const BOARD_WIDTH = 10, BOARD_HEIGHT = 20, BLOCK_SIZE = 30;
+    const SHAPES = [
+      { shape: [[1,1,1,1]], color: '#00d4ff' }, { shape: [[1,1],[1,1]], color: '#ffcc00' },
+      { shape: [[0,1,0],[1,1,1]], color: '#ff00e5' }, { shape: [[1,0,0],[1,1,1]], color: '#00ff88' },
+      { shape: [[0,0,1],[1,1,1]], color: '#ff3366' }, { shape: [[0,1,1],[1,1,0]], color: '#ff9900' },
+      { shape: [[1,1,0],[0,1,1]], color: '#0099ff' }
+    ];
+
+    // ==================== STORAGE ====================
+    function getData(key, def = []) {
+      try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : def; }
+      catch (e) { logError('parse', e.message); return def; }
+    }
+    function setData(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); }
+      catch (e) { logError('storage', 'Quota exceeded: ' + e.message); }
+    }
+
+    function addLog(action, details, userOverride) {
+      const logs = getData(STORAGE_KEYS.LOGS);
+      logs.unshift({
+        id: Date.now() + Math.random(),
+        user: userOverride || (currentUser ? currentUser.login : 'system'),
+        role: currentUser ? currentUser.role : 'system',
+        action, details, time: new Date().toLocaleString('uz-UZ')
+      });
+      if (logs.length > 500) logs.pop();
+      setData(STORAGE_KEYS.LOGS, logs);
+    }
+
+    // ==================== LOG MONITOR ====================
+    function logError(type, message, stack) {
+      const errors = getData(STORAGE_KEYS.ERRORS);
+      errors.unshift({
+        id: Date.now() + Math.random(),
+        type, message, stack: stack || '',
+        time: new Date().toLocaleString('uz-UZ'),
+        timestamp: Date.now()
+      });
+      if (errors.length > 200) errors.pop();
+      setData(STORAGE_KEYS.ERRORS, errors);
+      if (currentUser && currentUser.position === 'developer') updateMonitorBadge();
+    }
+
+    function logConsole(type, message) {
+      const console_logs = getData(STORAGE_KEYS.CONSOLE);
+      console_logs.unshift({
+        id: Date.now() + Math.random(),
+        type, message,
+        time: new Date().toLocaleTimeString('uz-UZ'),
+        timestamp: Date.now()
+      });
+      if (console_logs.length > 300) console_logs.pop();
+      setData(STORAGE_KEYS.CONSOLE, console_logs);
+      if (currentUser && currentUser.position === 'developer' && !document.getElementById('devmonitorTab').classList.contains('hidden')) {
+        renderConsole();
+      }
+    }
+
+    function logApi(method, url, status, time) {
+      const apis = getData(STORAGE_KEYS.API_LOGS);
+      apis.unshift({
+        id: Date.now() + Math.random(),
+        method, url, status, time,
+        timestamp: Date.now(),
+        date: new Date().toLocaleTimeString('uz-UZ')
+      });
+      if (apis.length > 100) apis.pop();
+      setData(STORAGE_KEYS.API_LOGS, apis);
+    }
+
+    // Global xato tutqich
+    window.addEventListener('error', function(e) {
+      logError('javascript', e.message, e.error ? e.error.stack : '');
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      logError('promise', String(e.reason), '');
+    });
+
+    // ==================== TOAST ====================
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const icons = { success: '✅', warning: '⚠️', error: '❌', info: 'ℹ️' };
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.innerHTML = `<div class="toast-icon">${icons[type]}</div>
+        <div class="toast-content">
+          <div class="toast-title">${escapeHtml(title)}</div>
+          <div class="toast-message">${escapeHtml(message)}</div>
+        </div>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // ==================== NOTIFICATIONS ====================
+    function addNotification(title, message, type = 'info') {
+      const notifs = getData(STORAGE_KEYS.NOTIFICATIONS);
+      notifs.unshift({ id: Date.now() + Math.random(), title, message, type, read: false,
+        time: new Date().toLocaleString('uz-UZ') });
+      if (notifs.length > 100) notifs.pop();
+      setData(STORAGE_KEYS.NOTIFICATIONS, notifs);
+      updateNotifCount();
+      showToast(title, message, type);
+    }
+
+    function updateNotifCount() {
+      const notifs = getData(STORAGE_KEYS.NOTIFICATIONS);
+      const unread = notifs.filter(n => !n.read).length;
+      const countEl = document.getElementById('notifCount');
+      if (countEl) {
+        if (unread > 0) {
+          countEl.textContent = unread > 99 ? '99+' : unread;
+          countEl.classList.remove('hidden');
+        } else countEl.classList.add('hidden');
+      }
+    }
+
+    function toggleNotificationPanel() {
+      const panel = document.getElementById('notificationPanel');
+      isNotifPanelOpen = !isNotifPanelOpen;
+      if (isNotifPanelOpen) {
+        panel.classList.remove('hidden');
+        renderNotifications();
+        const notifs = getData(STORAGE_KEYS.NOTIFICATIONS);
+        notifs.forEach(n => n.read = true);
+        setData(STORAGE_KEYS.NOTIFICATIONS, notifs);
+        setTimeout(() => { updateNotifCount(); renderNotifications(); }, 300);
+      } else panel.classList.add('hidden');
+    }
+
+    function renderNotifications() {
+      const notifs = getData(STORAGE_KEYS.NOTIFICATIONS);
+      const list = document.getElementById('notifList');
+      if (!list) return;
+      list.innerHTML = notifs.length === 0
+        ? '<p style="text-align:center;color:var(--text-dim);padding:20px;">Bildirishnoma yo\'q</p>'
+        : notifs.map(n => `<div class="notif-item ${n.read ? '' : 'unread'}">
+            <div class="notif-item-title">${escapeHtml(n.title)}</div>
+            <div class="notif-item-text">${escapeHtml(n.message)}</div>
+            <div class="notif-item-time">${escapeHtml(n.time)}</div>
+          </div>`).join('');
+    }
+
+    function clearAllNotifications() {
+      if (confirm("Tozalash?")) {
+        setData(STORAGE_KEYS.NOTIFICATIONS, []);
+        updateNotifCount();
+        renderNotifications();
+      }
+    }
+
+    // ==================== THEME ====================
+    function toggleTheme() {
+      document.body.classList.toggle('light-theme');
+      const isLight = document.body.classList.contains('light-theme');
+      setData(STORAGE_KEYS.THEME, isLight ? 'light' : 'dark');
+      showToast('Tema', isLight ? 'Yorug\'' : 'Qorong\'u', 'info');
+    }
+
+    function applyTheme() {
+      if (getData(STORAGE_KEYS.THEME, 'dark') === 'light') document.body.classList.add('light-theme');
+    }
+
+    // ==================== CLOCK ====================
+    function startClock() {
+      function update() {
+        const now = new Date();
+        const c = document.getElementById('headerClock');
+        const d = document.getElementById('headerDate');
+        if (c) c.textContent = '🕐 ' + now.toLocaleTimeString('uz-UZ');
+        if (d) d.textContent = '📅 ' + now.toLocaleDateString('uz-UZ', { day: '2-digit', month: 'short', year: 'numeric' });
+      }
+      update();
+      if (clockInterval) clearInterval(clockInterval);
+      clockInterval = setInterval(update, 1000);
+    }
+
+    // ==================== GLOBAL SEARCH ====================
+    function performGlobalSearch() {
+      const query = (document.getElementById('globalSearch').value || '').toLowerCase().trim();
+      const results = document.getElementById('searchResults');
+      if (!query) { results.classList.add('hidden'); return; }
+
+      const results_arr = [];
+      const sources = [
+        { key: STORAGE_KEYS.DATA, type: 'Ma\'lumot', nameField: 'title', descField: 'value', tab: 'data' },
+        { key: STORAGE_KEYS.ARCHIVE, type: 'Arxiv', nameField: 'title', descField: 'value', tab: 'archive' },
+        { key: STORAGE_KEYS.EMPLOYEES, type: 'Xodim', nameField: 'login', descField: 'fullname', tab: 'employees' },
+        { key: STORAGE_KEYS.PROJECTS, type: 'Loyiha', nameField: 'name', descField: 'manager', tab: 'projects' },
+        { key: STORAGE_KEYS.CLIENTS, type: 'Mijoz', nameField: 'name', descField: 'company', tab: 'clients' },
+        { key: STORAGE_KEYS.TASKS, type: 'Vazifa', nameField: 'title', descField: '', tab: 'tasks' },
+        { key: STORAGE_KEYS.KNOWLEDGE, type: 'Bilim', nameField: 'title', descField: 'content', tab: 'knowledge' }
+      ];
+
+      sources.forEach(src => {
+        const items = getData(src.key);
+        (Array.isArray(items) ? items : []).forEach(item => {
+          const name = String(item[src.nameField] || '').toLowerCase();
+          const desc = String(item[src.descField] || '').toLowerCase();
+          if (name.includes(query) || desc.includes(query)) {
+            results_arr.push({ type: src.type, name: item[src.nameField] || '-', desc: item[src.descField] || '', tab: src.tab });
+          }
+        });
+      });
+
+      results.innerHTML = results_arr.length === 0
+        ? '<div class="search-result-item">Topilmadi</div>'
+        : results_arr.slice(0, 10).map(r => `<div class="search-result-item" onclick="navigateToTab('${r.tab}')">
+            <div class="search-result-type">${r.type}</div>
+            <div>${escapeHtml(String(r.name))}</div>
+            ${r.desc ? '<div style="font-size:12px;color:var(--text-dim);">' + escapeHtml(String(r.desc).substring(0, 50)) + '</div>' : ''}
+          </div>`).join('');
+      results.classList.remove('hidden');
+    }
+
+    function closeSearch() {
+      const el = document.getElementById('searchResults');
+      if (el) el.classList.add('hidden');
+    }
+
+    function navigateToTab(tabName) {
+      closeSearch();
+      const input = document.getElementById('globalSearch');
+      if (input) input.value = '';
+      const tabEl = document.querySelector(`.tab[data-tab="${tabName}"]`);
+      if (tabEl) switchTab(tabName, tabEl);
+    }
+
+    // ==================== DEV MONITOR ====================
+    function updateMonitorBadge() {
+      const errors = getData(STORAGE_KEYS.ERRORS);
+      const oneHourAgo = Date.now() - 3600000;
+      const recentErrors = errors.filter(e => e.timestamp > oneHourAgo && e.type !== 'warning');
+      const recentWarns = errors.filter(e => e.timestamp > oneHourAgo && e.type === 'warning');
+      const errEl = document.getElementById('monitorErrors');
+      const warnEl = document.getElementById('monitorWarns');
+      const errBar = document.getElementById('errorBar');
+      const warnBar = document.getElementById('warnBar');
+      if (errEl) errEl.textContent = recentErrors.length;
+      if (warnEl) warnEl.textContent = recentWarns.length;
+      if (errBar) errBar.style.width = Math.min(100, recentErrors.length * 10) + '%';
+      if (warnBar) warnBar.style.width = Math.min(100, recentWarns.length * 10) + '%';
+    }
+
+    function renderDevMonitor() {
+      updateMonitorBadge();
+
+      const perfEl = document.getElementById('monitorPerf');
+      if (perfEl) perfEl.textContent = performanceMetrics.avgResponse + 'ms';
+      const perfBar = document.getElementById('perfBar');
+      if (perfBar) perfBar.style.width = Math.min(100, performanceMetrics.avgResponse / 10) + '%';
+
+      let totalSize = 0;
+      Object.keys(STORAGE_KEYS).forEach(k => {
+        const item = localStorage.getItem(STORAGE_KEYS[k]);
+        if (item) totalSize += item.length;
+      });
+      const storageEl = document.getElementById('monitorStorage');
+      if (storageEl) storageEl.textContent = (totalSize / 1024).toFixed(1) + 'KB';
+      const storageBar = document.getElementById('storageBar');
+      if (storageBar) storageBar.style.width = Math.min(100, (totalSize / 1024 / 50) * 100) + '%';
+
+      renderConsole();
+      renderErrors();
+      renderApiLogs();
+      renderStorageKeys();
+    }
+
+    function renderConsole() {
+      const container = document.getElementById('devConsole');
+      if (!container) return;
+      const logs = getData(STORAGE_KEYS.CONSOLE).slice(0, 50);
+      container.innerHTML = logs.length === 0
+        ? '<div class="console-line debug"><span class="console-time">--:--:--</span>Console bo\'sh</div>'
+        : logs.map(l => {
+            const typeClass = l.type === 'error' ? 'error' : l.type === 'warn' ? 'warn' : l.type === 'info' ? 'info' : 'log';
+            return `<div class="console-line ${typeClass}">
+              <span class="console-time">${l.time}</span>
+              <span class="console-type">[${l.type.toUpperCase()}]</span>
+              ${escapeHtml(l.message)}
+            </div>`;
+          }).join('');
+    }
+
+    function renderErrors() {
+      const container = document.getElementById('errorsList');
+      if (!container) return;
+      const errors = getData(STORAGE_KEYS.ERRORS).slice(0, 20);
+      container.innerHTML = errors.length === 0
+        ? '<p style="text-align:center;color:var(--text-dim);padding:20px;">Xatolar yo\'q</p>'
+        : errors.map(e => {
+            const itemClass = e.type === 'warning' ? 'warning' : e.type === 'info' ? 'info' : '';
+            return `<div class="error-item ${itemClass}">
+              <div class="error-header">
+                <span>${e.type.toUpperCase()}</span>
+                <span>${escapeHtml(e.time)}</span>
+              </div>
+              <div class="error-body">${escapeHtml(e.message)}</div>
+              ${e.stack ? '<div class="error-stack">' + escapeHtml(e.stack.substring(0, 200)) + '</div>' : ''}
+            </div>`;
+          }).join('');
+    }
+
+    function renderApiLogs() {
+      const container = document.getElementById('apiList');
+      if (!container) return;
+      const apis = getData(STORAGE_KEYS.API_LOGS).slice(0, 15);
+      container.innerHTML = apis.length === 0
+        ? '<p style="text-align:center;color:var(--text-dim);padding:20px;">API so\'rovlar yo\'q</p>'
+        : apis.map(a => `<div class="metric-row">
+            <span class="metric-label">
+              <span class="badge ${a.status >= 200 && a.status < 300 ? 'badge-success' : a.status >= 400 ? 'badge-danger' : 'badge-warning'}">${a.method}</span>
+              ${escapeHtml(a.url)}
+            </span>
+            <span class="metric-value">${a.status} • ${a.time}ms</span>
+          </div>`).join('');
+    }
+
+    function renderStorageKeys() {
+      const container = document.getElementById('storageKeys');
+      if (!container) return;
+      const rows = Object.keys(STORAGE_KEYS).map(k => {
+        const key = STORAGE_KEYS[k];
+        const item = localStorage.getItem(key);
+        const size = item ? (item.length / 1024).toFixed(2) + 'KB' : '0KB';
+        return `<div class="metric-row">
+          <span class="metric-label" style="font-family:monospace;font-size:12px;">${escapeHtml(key)}</span>
+          <span class="metric-value" style="font-size:12px;">${size}</span>
+        </div>`;
+      }).join('');
+      container.innerHTML = rows;
+    }
+
+    function clearConsole() {
+      setData(STORAGE_KEYS.CONSOLE, []);
+      renderConsole();
+      showToast('Console', 'Tozalandi', 'success');
+    }
+
+    function exportConsoleLog() {
+      const logs = getData(STORAGE_KEYS.CONSOLE);
+      const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'console_' + Date.now() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function runTests() {
+      logConsole('info', 'Test runner ishga tushirildi');
+      const tests = [
+        { name: 'localStorage ishlaydi', fn: () => { localStorage.setItem('__test', '1'); const v = localStorage.getItem('__test'); localStorage.removeItem('__test'); return v === '1'; } },
+        { name: 'getData default qiymat', fn: () => { return Array.isArray(getData('__nonexistent__', [])); } },
+        { name: 'setData/getData roundtrip', fn: () => { setData('__rt', { x: 1 }); const v = getData('__rt'); localStorage.removeItem('__rt'); return v.x === 1; } },
+        { name: 'escapeHtml himoyasi', fn: () => { return escapeHtml('<script>') === '&lt;script&gt;'; } },
+        { name: 'escapeJs himoyasi', fn: () => { return !escapeJs("test'").includes("'"); } },
+        { name: 'QRCode kutubxonasi', fn: () => { return typeof QRCode !== 'undefined'; } },
+        { name: 'localStorage quota', fn: () => { try { localStorage.setItem('__q', 'x'.repeat(1000)); localStorage.removeItem('__q'); return true; } catch (e) { return false; } } },
+        { name: 'JSON serialize', fn: () => { try { JSON.stringify({ a: 1 }); return true; } catch (e) { return false; } } },
+        { name: 'Date parse', fn: () => { return !isNaN(new Date().getTime()); } },
+        { name: 'Math operatsiyalar', fn: () => { return 2 + 2 === 4; } }
+      ];
+
+      const results = tests.map(t => {
+        let passed = false, err = '';
+        try { passed = t.fn(); } catch (e) { err = e.message; }
+        return { name: t.name, passed, error: err, time: new Date().toLocaleTimeString('uz-UZ') };
+      });
+
+      setData(STORAGE_KEYS.TEST_RESULTS, results);
+
+      const container = document.getElementById('testResults');
+      if (container) {
+        const passed = results.filter(r => r.passed).length;
+        container.innerHTML = `
+          <div style="margin-bottom:15px;font-family:monospace;">
+            <strong style="color:${passed === results.length ? 'var(--green)' : 'var(--yellow)'};">
+              ${passed}/${results.length} test o'tdi
+            </strong>
+          </div>
+          ${results.map(r => `<div class="metric-row">
+            <span class="metric-label">${r.passed ? '✅' : '❌'} ${escapeHtml(r.name)}</span>
+            <span class="metric-value" style="color:${r.passed ? 'var(--green)' : 'var(--red)'};">${r.passed ? 'PASS' : 'FAIL'}</span>
+          </div>`).join('')}
+        `;
+      }
+
+      logConsole('info', `Tests: ${results.filter(r => r.passed).length}/${results.length} passed`);
+      showToast('Test', 'Testlar tugadi', 'success');
+    }
+
+    function clearTests() {
+      setData(STORAGE_KEYS.TEST_RESULTS, []);
+      const el = document.getElementById('testResults');
+      if (el) el.innerHTML = '';
+    }
+
+    function startDevMonitor() {
+      if (devMonitorInterval) clearInterval(devMonitorInterval);
+      devMonitorInterval = setInterval(() => {
+        const tab = document.getElementById('devmonitorTab');
+        if (tab && !tab.classList.contains('hidden')) renderDevMonitor();
+      }, 3000);
+    }
+
+    function recordPerformance(startTime) {
+      const elapsed = Date.now() - startTime;
+      performanceMetrics.requests.push(elapsed);
+      if (performanceMetrics.requests.length > 20) performanceMetrics.requests.shift();
+      performanceMetrics.avgResponse = Math.round(
+        performanceMetrics.requests.reduce((a, b) => a + b, 0) / performanceMetrics.requests.length
+      );
+    }
+
+    // ==================== KPI ====================
+    function loadKPI() {
+      const grid = document.getElementById('kpiGrid');
+      if (!grid) return;
+
+      const data = getData(STORAGE_KEYS.DATA);
+      const employees = getData(STORAGE_KEYS.EMPLOYEES);
+      const projects = getData(STORAGE_KEYS.PROJECTS);
+      const finance = getData(STORAGE_KEYS.FINANCE);
+      const tasks = getData(STORAGE_KEYS.TASKS);
+      const clients = getData(STORAGE_KEYS.CLIENTS);
+
+      const income = finance.filter(f => f.type === 'income').reduce((s, f) => s + (f.amount || 0), 0);
+      const expense = finance.filter(f => f.type === 'expense').reduce((s, f) => s + (f.amount || 0), 0);
+      const activeProjects = projects.filter(p => p.status === 'active').length;
+      const doneTasks = tasks.filter(t => t.done).length;
+
+      const kpis = [
+        { label: 'Ma\'lumotlar', value: data.length },
+        { label: 'Xodimlar', value: employees.length },
+        { label: 'Faol loyihalar', value: activeProjects },
+        { label: 'Foyda', value: formatMoney(income - expense) },
+        { label: 'Mijozlar', value: clients.length },
+        { label: 'Bajarilgan vazifalar', value: doneTasks }
+      ];
+
+      grid.innerHTML = kpis.map(k => `<div class="kpi-card">
+        <div class="kpi-label">${escapeHtml(k.label)}</div>
+        <div class="kpi-value">${escapeHtml(String(k.value))}</div>
+      </div>`).join('');
+    }
+
+    // ==================== AUDIT ====================
+    function loadAuditLog() {
+      const container = document.getElementById('auditList');
+      if (!container) return;
+      const filter = document.getElementById('auditFilter') ? document.getElementById('auditFilter').value : 'all';
+      let logs = getData(STORAGE_KEYS.LOGS);
+      if (filter !== 'all') logs = logs.filter(l => l.action === filter);
+      container.innerHTML = logs.length === 0
+        ? '<p style="text-align:center;color:var(--text-dim);padding:20px;">Log yo\'q</p>'
+        : logs.map(l => `<div class="log-item">
+            <div class="log-meta">
+              <span><strong>${escapeHtml(l.user)}</strong> (${escapeHtml(l.role || '-')})</span>
+              <span class="log-action">${escapeHtml(l.action)}</span>
+              <span class="log-time">${escapeHtml(l.time)}</span>
+            </div>
+            <div class="log-details">${escapeHtml(l.details)}</div>
+          </div>`).join('');
+    }
+
+    function exportAuditLog() {
+      const logs = getData(STORAGE_KEYS.LOGS);
+      const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'audit_' + Date.now() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ==================== SECURITY ====================
+    function loadSecurity() {
+      const sessions = getData(STORAGE_KEYS.SESSIONS, []);
+      const logs = getData(STORAGE_KEYS.LOGS);
+      const blocked = logs.filter(l => l.action === 'blocked').length;
+
+      const s = document.getElementById('secSessions');
+      const b = document.getElementById('secBlocked');
+      const last = document.getElementById('secLastLogin');
+
+      if (s) s.textContent = Math.max(1, sessions.length);
+      if (b) b.textContent = blocked;
+
+      const lastLogin = logs.find(l => l.action === 'kirish');
+      if (last && lastLogin) last.textContent = lastLogin.time;
+    }
+
+    // ==================== FEEDBACK ====================
+    function addFeedback() {
+      const stars = parseInt(document.getElementById('feedbackStars').value);
+      const text = document.getElementById('feedbackText').value.trim();
+      if (!text) { showToast('Xato', 'Fikr yozing', 'error'); return; }
+      const items = getData(STORAGE_KEYS.FEEDBACK);
+      items.unshift({ id: Date.now() + Math.random(), stars, text, from: currentUser.login, createdAt: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.FEEDBACK, items);
+      document.getElementById('feedbackText').value = '';
+      loadFeedback();
+      showToast('Feedback', 'Rahmat!', 'success');
+    }
+
+    function loadFeedback() {
+      const items = getData(STORAGE_KEYS.FEEDBACK);
+      const container = document.getElementById('feedbackList');
+      if (!container) return;
+      container.innerHTML = items.length === 0
+        ? '<p style="text-align:center;color:var(--text-dim);padding:20px;">Feedback yo\'q</p>'
+        : items.map(f => `<div class="feedback-item">
+            <div class="feedback-stars">${'⭐'.repeat(f.stars)}</div>
+            <div class="feedback-text">${escapeHtml(f.text)}</div>
+            <div class="feedback-meta">— ${escapeHtml(f.from)} • ${escapeHtml(f.createdAt)}</div>
+          </div>`).join('');
+    }
+
+    // ==================== KNOWLEDGE ====================
+    function addKnowledge() {
+      const title = document.getElementById('kbTitle').value.trim();
+      const content = document.getElementById('kbContent').value.trim();
+      if (!title || !content) { showToast('Xato', "To'ldiring", 'error'); return; }
+      const items = getData(STORAGE_KEYS.KNOWLEDGE);
+      items.unshift({ id: Date.now() + Math.random(), title, content, author: currentUser.login, createdAt: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.KNOWLEDGE, items);
+      document.getElementById('kbTitle').value = '';
+      document.getElementById('kbContent').value = '';
+      loadKnowledge();
+      showToast('Bilim', 'Qo\'shildi', 'success');
+    }
+
+    function loadKnowledge() {
+      const items = getData(STORAGE_KEYS.KNOWLEDGE);
+      const container = document.getElementById('kbList');
+      if (!container) return;
+      container.innerHTML = items.length === 0
+        ? '<p style="text-align:center;color:var(--text-dim);padding:20px;">Maqola yo\'q</p>'
+        : items.map(k => `<div class="kb-item">
+            <div class="kb-title">${escapeHtml(k.title)}</div>
+            <div class="kb-content">${escapeHtml(k.content)}</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:8px;">— ${escapeHtml(k.author)} • ${escapeHtml(k.createdAt)}</div>
+          </div>`).join('');
+    }
+
+    // ==================== TASKS ====================
+    function addTask() {
+      const title = document.getElementById('taskTitle').value.trim();
+      const priority = document.getElementById('taskPriority').value;
+      if (!title) { showToast('Xato', 'Nom kiriting', 'error'); return; }
+      const tasks = getData(STORAGE_KEYS.TASKS);
+      tasks.unshift({ id: Date.now() + Math.random(), title, priority, done: false,
+        user: currentUser.login, createdAt: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.TASKS, tasks);
+      document.getElementById('taskTitle').value = '';
+      loadTasks();
+      showToast('Vazifa', 'Qo\'shildi', 'success');
+    }
+
+    function loadTasks() {
+      if (!currentUser) return;
+      const tasks = getData(STORAGE_KEYS.TASKS).filter(t => t.user === currentUser.login);
+      const list = document.getElementById('tasksList');
+      if (!list) return;
+      if (tasks.length === 0) {
+        list.innerHTML = '<p style="text-align:center;color:var(--text-dim);padding:20px;">Vazifa yo\'q</p>';
+        return;
+      }
+      const colors = { low: 'var(--green)', medium: 'var(--yellow)', high: 'var(--red)' };
+      list.innerHTML = tasks.map(t => `<div class="task-item ${t.done ? 'done' : ''}">
+        <div class="task-check ${t.done ? 'checked' : ''}" onclick="toggleTask('${escapeJs(String(t.id))}')">${t.done ? '✓' : ''}</div>
+        <div class="task-title ${t.done ? 'done' : ''}">${escapeHtml(t.title)}</div>
+        <span style="color:${colors[t.priority]};font-size:12px;">●</span>
+        <button class="btn-small" onclick="deleteTask('${escapeJs(String(t.id))}')" style="background:var(--red);">✕</button>
+      </div>`).join('');
+    }
+
+    function toggleTask(id) {
+      let tasks = getData(STORAGE_KEYS.TASKS);
+      const t = tasks.find(x => String(x.id) === id);
+      if (t) { t.done = !t.done; setData(STORAGE_KEYS.TASKS, tasks); loadTasks(); }
+    }
+
+    function deleteTask(id) {
+      let tasks = getData(STORAGE_KEYS.TASKS);
+      tasks = tasks.filter(t => String(t.id) !== id);
+      setData(STORAGE_KEYS.TASKS, tasks);
+      loadTasks();
+    }
+
+    // ==================== MESSAGES ====================
+    function sendMessage() {
+      const to = document.getElementById('msgTo').value.trim();
+      const text = document.getElementById('msgText').value.trim();
+      if (!to || !text) { showToast('Xato', "To'ldiring", 'error'); return; }
+      if (to === currentUser.login) { showToast('Xato', "O'zingizga yubora olmaysiz", 'error'); return; }
+      const employees = getData(STORAGE_KEYS.EMPLOYEES);
+      if (to !== 'boshliq' && !employees.find(e => e.login === to)) {
+        showToast('Xato', 'Bunday foydalanuvchi yo\'q', 'error');
+        return;
+      }
+      const messages = getData(STORAGE_KEYS.MESSAGES);
+      messages.unshift({ id: Date.now() + Math.random(), from: currentUser.login, to, text,
+        read: false, time: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.MESSAGES, messages);
+      document.getElementById('msgTo').value = '';
+      document.getElementById('msgText').value = '';
+      loadMessages();
+      showToast('Xabar', 'Yuborildi', 'success');
+    }
+
+    function loadMessages() {
+      if (!currentUser) return;
+      const messages = getData(STORAGE_KEYS.MESSAGES);
+      const inbox = messages.filter(m => m.to === currentUser.login);
+      const sent = messages.filter(m => m.from === currentUser.login);
+
+      const inboxEl = document.getElementById('messagesInbox');
+      const sentEl = document.getElementById('messagesSent');
+
+      if (inboxEl) {
+        inboxEl.innerHTML = inbox.length === 0
+          ? '<p style="color:var(--text-dim);padding:10px;">Xabar yo\'q</p>'
+          : inbox.map(m => `<div class="message-item">
+              <div class="message-avatar">${escapeHtml(m.from.charAt(0).toUpperCase())}</div>
+              <div class="message-body">
+                <div class="message-from">${escapeHtml(m.from)}</div>
+                <div class="message-text">${escapeHtml(m.text)}</div>
+                <div class="message-time">${escapeHtml(m.time)}</div>
+              </div>
+            </div>`).join('');
+      }
+      if (sentEl) {
+        sentEl.innerHTML = sent.length === 0
+          ? '<p style="color:var(--text-dim);padding:10px;">Yuborilgan yo\'q</p>'
+          : sent.map(m => `<div class="message-item">
+              <div class="message-avatar">${escapeHtml(m.to.charAt(0).toUpperCase())}</div>
+              <div class="message-body">
+                <div class="message-from">→ ${escapeHtml(m.to)}</div>
+                <div class="message-text">${escapeHtml(m.text)}</div>
+                <div class="message-time">${escapeHtml(m.time)}</div>
+              </div>
+            </div>`).join('');
+      }
+    }
+
+    // ==================== CALENDAR ====================
+    function changeMonth(delta) {
+      calendarDate.setMonth(calendarDate.getMonth() + delta);
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      if (!currentUser) return;
+      const year = calendarDate.getFullYear(), month = calendarDate.getMonth();
+      const months = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'];
+      const mEl = document.getElementById('calendarMonth');
+      if (mEl) mEl.textContent = months[month] + ' ' + year;
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const offset = firstDay === 0 ? 6 : firstDay - 1;
+      const events = getData(STORAGE_KEYS.EVENTS);
+      const grid = document.getElementById('calendarGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      for (let i = 0; i < offset; i++) grid.innerHTML += '<div></div>';
+
+      const today = new Date();
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+        const hasEvent = events.some(e => e.date === dateStr);
+        grid.innerHTML += `<div class="calendar-day ${isToday ? 'today' : ''} ${hasEvent ? 'has-event' : ''}">${day}</div>`;
+      }
+
+      const eventsList = document.getElementById('eventsList');
+      if (eventsList) {
+        const sortedEvents = events.filter(e => e.date.startsWith(`${year}-${String(month + 1).padStart(2, '0')}`)).sort((a, b) => a.date.localeCompare(b.date));
+        eventsList.innerHTML = sortedEvents.length === 0
+          ? '<p style="color:var(--text-dim);padding:10px;">Voqea yo\'q</p>'
+          : sortedEvents.map(e => `<div class="metric-row">
+              <span class="metric-label">📅 ${escapeHtml(e.date)} — ${escapeHtml(e.title)}</span>
+              <button class="btn-small" onclick="deleteEvent('${escapeJs(String(e.id))}')" style="background:var(--red);">✕</button>
+            </div>`).join('');
+      }
+    }
+
+    function addEvent() {
+      const date = document.getElementById('eventDate').value;
+      const title = document.getElementById('eventTitle').value.trim();
+      if (!date || !title) { showToast('Xato', "To'ldiring", 'error'); return; }
+      const events = getData(STORAGE_KEYS.EVENTS);
+      events.push({ id: Date.now() + Math.random(), date, title, createdBy: currentUser.login });
+      setData(STORAGE_KEYS.EVENTS, events);
+      document.getElementById('eventDate').value = '';
+      document.getElementById('eventTitle').value = '';
+      renderCalendar();
+      showToast('Kalendar', 'Qo\'shildi', 'success');
+    }
+
+    function deleteEvent(id) {
+      let events = getData(STORAGE_KEYS.EVENTS);
+      events = events.filter(e => String(e.id) !== id);
+      setData(STORAGE_KEYS.EVENTS, events);
+      renderCalendar();
+    }
+
+    // ==================== FAVORITES ====================
+    function addFavorite(type, id, name) {
+      const favs = getData(STORAGE_KEYS.FAVORITES);
+      if (favs.some(f => f.type === type && String(f.id) === String(id) && f.user === currentUser.login)) {
+        showToast('Sevimlilar', 'Allaqachon qo\'shilgan', 'info');
+        return;
+      }
+      favs.push({ type, id, name, user: currentUser.login });
+      setData(STORAGE_KEYS.FAVORITES, favs);
+      loadFavorites();
+      showToast('Sevimlilar', 'Qo\'shildi', 'success');
+    }
+
+    function loadFavorites() {
+      if (!currentUser) return;
+      const favs = getData(STORAGE_KEYS.FAVORITES).filter(f => f.user === currentUser.login);
+      const list = document.getElementById('favoritesList');
+      if (!list) return;
+      list.innerHTML = favs.length === 0
+        ? '<p style="text-align:center;color:var(--text-dim);padding:20px;">Sevimlilar yo\'q</p>'
+        : favs.map(f => `<div class="metric-row">
+            <span class="metric-label">⭐ [${escapeHtml(f.type)}] ${escapeHtml(String(f.name))}</span>
+            <button class="btn-small" onclick="removeFavorite('${escapeJs(String(f.id))}')" style="background:var(--red);">✕</button>
+          </div>`).join('');
+    }
+
+    function removeFavorite(id) {
+      let favs = getData(STORAGE_KEYS.FAVORITES);
+      favs = favs.filter(f => String(f.id) !== id);
+      setData(STORAGE_KEYS.FAVORITES, favs);
+      loadFavorites();
+    }
+
+    // ==================== PROFILE ====================
+    function showProfile() { navigateToTab('profile'); }
+
+    function loadProfile() {
+      if (!currentUser) return;
+      const employees = getData(STORAGE_KEYS.EMPLOYEES);
+      const emp = employees.find(e => e.login === currentUser.login);
+      const avatar = document.getElementById('profileAvatar');
+      if (avatar) avatar.textContent = currentUser.login.charAt(0).toUpperCase();
+
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      set('profLogin', currentUser.login);
+      set('profName', emp ? (emp.fullname || '-') : 'Boshliq');
+      const posConfig = currentUser.role === 'boss' ? POSITION_CONFIG.boss : (POSITION_CONFIG[currentUser.position] || POSITION_CONFIG.other);
+      set('profPosition', posConfig.icon + ' ' + posConfig.name);
+      set('profEmail', emp ? (emp.email || '-') : 'boss@datasince.uz');
+      set('profPhone', emp ? (emp.phone || '-') : '+998901234567');
+    }
+
+    function changePassword() {
+      const oldPass = document.getElementById('oldPass').value;
+      const newPass = document.getElementById('newPass').value;
+      const confirm = document.getElementById('newPassConfirm').value;
+      if (!oldPass || !newPass) { showToast('Xato', "To'ldiring", 'error'); return; }
+      if (newPass.length < 4) { showToast('Xato', 'Parol ≥4 belgi', 'error'); return; }
+      if (newPass !== confirm) { showToast('Xato', 'Mos emas', 'error'); return; }
+
+      if (currentUser.role === 'boss') {
+        if (oldPass !== 'boshliq123') { showToast('Xato', 'Eski parol xato', 'error'); return; }
+        showToast('Info', 'Boshliq paroli qat\'iy', 'info');
+        return;
+      }
+      let employees = getData(STORAGE_KEYS.EMPLOYEES);
+      const emp = employees.find(e => e.login === currentUser.login);
+      if (!emp || emp.password !== oldPass) { showToast('Xato', 'Eski parol xato', 'error'); return; }
+      emp.password = newPass;
+      setData(STORAGE_KEYS.EMPLOYEES, employees);
+      addLog('tahrirlash', 'Parol: ' + currentUser.login);
+      ['oldPass', 'newPass', 'newPassConfirm'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      showToast('Muvaffaqiyat', 'Parol o\'zgardi', 'success');
+    }
+
+    // ==================== DASHBOARD ====================
+    function loadDashboard() {
+      if (!currentUser) return;
+      const data = getData(STORAGE_KEYS.DATA);
+      const dailyCounts = {};
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        dailyCounts[d.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit' })] = 0;
+      }
+      data.forEach(item => {
+        if (item.createdAt) {
+          const parts = item.createdAt.split(',')[0].split('.');
+          if (parts.length >= 2) {
+            const key = parts[0].padStart(2, '0') + '.' + parts[1].padStart(2, '0');
+            if (dailyCounts[key] !== undefined) dailyCounts[key]++;
+          }
+        }
+      });
+      drawLineChart('chartDataGrowth', Object.keys(dailyCounts), Object.values(dailyCounts));
+
+      const employees = getData(STORAGE_KEYS.EMPLOYEES);
+      const roleCounts = {};
+      employees.forEach(e => { const p = e.position || 'other'; roleCounts[p] = (roleCounts[p] || 0) + 1; });
+      drawBarChart('chartRoles', Object.keys(roleCounts).map(k => (POSITION_CONFIG[k] || POSITION_CONFIG.other).name), Object.values(roleCounts));
+
+      const goals = [
+        { name: '📋 Ma\'lumot', current: Math.min(data.length, 10), target: 10 },
+        { name: '✅ Vazifalar', current: getData(STORAGE_KEYS.TASKS).filter(t => t.done && t.user === currentUser.login).length, target: 5 },
+        { name: '💬 Xabarlar', current: getData(STORAGE_KEYS.MESSAGES).filter(m => m.from === currentUser.login).length, target: 3 }
+      ];
+      const goalsList = document.getElementById('goalsList');
+      if (goalsList) {
+        goalsList.innerHTML = goals.map(g => {
+          const pct = Math.min(100, Math.round((g.current / g.target) * 100));
+          return `<div style="margin-bottom:15px;">
+            <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px;">
+              <span>${g.name}</span>
+              <span style="color:var(--cyan);font-family:monospace;">${g.current}/${g.target}</span>
+            </div>
+            <div class="progress"><div class="progress-bar" style="width:${pct}%;"></div></div>
+          </div>`;
+        }).join('');
+      }
+
+      const logs = getData(STORAGE_KEYS.LOGS).slice(0, 5);
+      const recent = document.getElementById('recentActivities');
+      if (recent) {
+        recent.innerHTML = logs.length === 0 ? '<p style="color:var(--text-dim);">Hodisalar yo\'q</p>' :
+          logs.map(l => `<div style="padding:8px 0;border-bottom:1px solid rgba(0,212,255,0.08);font-size:13px;">
+            <span style="color:var(--cyan);font-family:monospace;">[${escapeHtml(l.action)}]</span> ${escapeHtml(l.details)}
+            <div style="color:var(--text-dim);font-size:11px;">${escapeHtml(l.time)}</div>
+          </div>`).join('');
+      }
+    }
+
+    function drawLineChart(canvasId, labels, values) {
+      const c = document.getElementById(canvasId);
+      if (!c) return;
+      const w = c.offsetWidth || 400;
+      c.width = w; c.height = 200;
+      const ctx = c.getContext('2d');
+      const pad = 30, maxV = Math.max(...values, 1);
+      const chartW = w - pad * 2, chartH = 200 - pad * 2;
+      ctx.clearRect(0, 0, w, 200);
+      ctx.strokeStyle = 'rgba(0,212,255,0.2)';
+      for (let i = 0; i <= 4; i++) {
+        const y = pad + (chartH / 4) * i;
+        ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(w - pad, y); ctx.stroke();
+      }
+      if (values.length > 0) {
+        ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        values.forEach((v, i) => {
+          const x = pad + (chartW / Math.max(values.length - 1, 1)) * i;
+          const y = pad + chartH - (v / maxV) * chartH;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        values.forEach((v, i) => {
+          const x = pad + (chartW / Math.max(values.length - 1, 1)) * i;
+          const y = pad + chartH - (v / maxV) * chartH;
+          ctx.fillStyle = '#ff00e5';
+          ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+        });
+      }
+      ctx.fillStyle = '#8892b0'; ctx.font = '11px monospace';
+      labels.forEach((l, i) => {
+        const x = pad + (chartW / Math.max(labels.length - 1, 1)) * i;
+        ctx.fillText(l, x - 12, 195);
+      });
+    }
+
+    function drawBarChart(canvasId, labels, values) {
+      const c = document.getElementById(canvasId);
+      if (!c) return;
+      const w = c.offsetWidth || 400;
+      c.width = w; c.height = 200;
+      const ctx = c.getContext('2d');
+      const pad = 30, maxV = Math.max(...values, 1);
+      const chartW = w - pad * 2, chartH = 200 - pad * 2;
+      const barW = chartW / Math.max(values.length, 1) * 0.6;
+      ctx.clearRect(0, 0, w, 200);
+      values.forEach((v, i) => {
+        const x = pad + (chartW / values.length) * i + (chartW / values.length - barW) / 2;
+        const h = (v / maxV) * chartH;
+        const y = pad + chartH - h;
+        const grad = ctx.createLinearGradient(0, y, 0, pad + chartH);
+        grad.addColorStop(0, '#00d4ff'); grad.addColorStop(1, '#ff00e5');
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, barW, h);
+        ctx.fillStyle = '#8892b0'; ctx.font = '10px monospace';
+        ctx.fillText(String(labels[i] || '').substring(0, 6), x, 195);
+      });
+    }
+
+    // ==================== SYSTEM ====================
+    function initSystemMonitor() {
+      sysStartTime = Date.now();
+      renderSystemStatus();
+      if (sysMonitorInterval) clearInterval(sysMonitorInterval);
+      sysMonitorInterval = setInterval(renderSystemStatus, 3000);
+    }
+
+    function renderSystemStatus() {
+      const cpu = 15 + Math.floor(Math.random() * 45);
+      const ram = 40 + Math.floor(Math.random() * 30);
+      const disk = 55 + Math.floor(Math.random() * 20);
+      const uptime = Math.floor((Date.now() - (sysStartTime || Date.now())) / 1000);
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      set('sysCpu', cpu + '%'); set('sysRam', ram + '%'); set('sysDisk', disk + '%');
+      set('sysUptime', formatUptime(uptime));
+
+      const services = document.getElementById('sysServices');
+      if (services) {
+        services.innerHTML = `
+          <div class="metric-row"><span><span class="status-dot online"></span> Veb server</span><span class="metric-value" style="color:var(--green);">ONLINE</span></div>
+          <div class="metric-row"><span><span class="status-dot online"></span> Database</span><span class="metric-value" style="color:var(--green);">ONLINE</span></div>
+          <div class="metric-row"><span><span class="status-dot warning"></span> Sync</span><span class="metric-value" style="color:var(--yellow);">WARN</span></div>
+          <div class="metric-row"><span><span class="status-dot online"></span> Auth</span><span class="metric-value" style="color:var(--green);">ONLINE</span></div>`;
+      }
+
+      const events = document.getElementById('sysEvents');
+      if (events) {
+        const logs = getData(STORAGE_KEYS.LOGS).slice(0, 5);
+        events.innerHTML = logs.length === 0 ? 'Hodisalar yo\'q' :
+          logs.map(l => `<div style="padding:6px 0;border-bottom:1px solid rgba(0,212,255,0.05);">
+            <span style="color:var(--cyan);">[${escapeHtml(l.action)}]</span> ${escapeHtml(l.details)}
+            <span style="float:right;color:var(--text-dim);">${escapeHtml(l.time)}</span>
+          </div>`).join('');
+      }
+    }
+
+    function formatUptime(sec) {
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      if (h > 0) return h + 'h ' + m + 'm';
+      if (m > 0) return m + 'm ' + s + 's';
+      return s + 's';
+    }
+
+    // ==================== MENYU ====================
+    function getUserPositionConfig() {
+      if (!currentUser) return null;
+      if (currentUser.role === 'boss') return POSITION_CONFIG.boss;
+      return POSITION_CONFIG[currentUser.position] || POSITION_CONFIG.other;
+    }
+
+    function buildTabsForUser() {
+      const config = getUserPositionConfig();
+      const container = document.getElementById('tabsContainer');
+      container.innerHTML = '';
+
+      config.tabs.forEach((tabName, idx) => {
+        const label = TAB_INFO[tabName];
+        if (!label) return;
+        const div = document.createElement('div');
+        div.className = 'tab' + (idx === 0 ? ' active' : '');
+        div.dataset.tab = tabName;
+        div.innerHTML = '◈ ' + label;
+        div.onclick = function() { switchTab(tabName, this); };
+        container.appendChild(div);
+      });
+
+      Object.keys(TAB_INFO).forEach(t => {
+        const el = document.getElementById(t + 'Tab');
+        if (el) el.classList.add('hidden');
+      });
+
+      if (config.tabs.length > 0) {
+        const first = document.getElementById(config.tabs[0] + 'Tab');
+        if (first) first.classList.remove('hidden');
+      }
+    }
+
+    function buildStatsForUser() {
+      const config = getUserPositionConfig();
+      const grid = document.getElementById('statsGrid');
+      grid.innerHTML = '';
+
+      const statInfo = {
+        data: { label: "Ma'lumotlar", valueId: 'statData' },
+        archive: { label: 'Arxiv', valueId: 'statArchive' },
+        employees: { label: 'Xodimlar', valueId: 'statEmployees' },
+        devices: { label: 'Qurilmalar', valueId: 'statDevices' }
+      };
+      config.stats.forEach(statName => {
+        const info = statInfo[statName];
+        if (!info) return;
+        const div = document.createElement('div');
+        div.className = 'stat-card';
+        div.innerHTML = '<div>◈ ' + info.label.toUpperCase() + '</div><div class="stat-value" id="' + info.valueId + '">0</div>';
+        grid.appendChild(div);
+      });
+    }
+
+    function showPositionBadge() {
+      const config = getUserPositionConfig();
+      const container = document.getElementById('headerRole');
+      if (container) container.innerHTML = '<span class="position-badge ' + config.badgeClass + '">' + config.icon + ' ' + config.name + '</span>';
+    }
+
+    // ==================== SYNC ====================
+    function getSyncId() {
+      let syncId = getData(STORAGE_KEYS.SYNC_ID, null);
+      if (!syncId || typeof syncId !== 'string') {
+        syncId = 'ds_' + Date.now() + '_' + Math.random().toString(36).substr(2, 16);
+        setData(STORAGE_KEYS.SYNC_ID, syncId);
+      }
+      return syncId;
+    }
+
+    function displaySyncQR() {
+      const syncId = getSyncId();
+      const s = document.getElementById('syncIdDisplay');
+      if (s) s.textContent = syncId;
+      const qrDiv = document.getElementById('qrcode');
+      if (!qrDiv) return;
+      qrDiv.innerHTML = '';
+      if (typeof QRCode === 'undefined') {
+        qrDiv.innerHTML = '<p style="color:#ff3366;">QR yuklanmadi</p>';
+        return;
+      }
+      new QRCode(qrDiv, { text: syncId, width: 200, height: 200, colorDark: "#0a0e27", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+    }
+
+    function copySyncId() {
+      const syncId = getSyncId();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(syncId).then(() => showToast('Sync', 'Nusxalandi', 'success'))
+          .catch(() => alert('📋 ' + syncId));
+      } else alert('📋 ' + syncId);
+    }
+
+    function exportAllData() {
+      const allData = { version: '5.0', exportTime: new Date().toISOString(), syncId: getSyncId(), data: {} };
+      Object.keys(STORAGE_KEYS).forEach(k => { if (k !== 'SYNC_ID') allData.data[k] = getData(STORAGE_KEYS[k]); });
+      const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'datasince_v5_' + Date.now() + '.json';
+      a.click(); URL.revokeObjectURL(url);
+      addLog('eksport', 'Barcha ma\'lumotlar');
+      showToast('Eksport', 'Tayyor', 'success');
+    }
+
+    function handleImportFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const imported = JSON.parse(evt.target.result);
+          if (!imported.data) { showToast('Xato', "Format xato", 'error'); return; }
+          if (!confirm("Ustiga yoziladi. Davom?")) return;
+          Object.keys(imported.data).forEach(k => { if (STORAGE_KEYS[k]) setData(STORAGE_KEYS[k], imported.data[k]); });
+          addLog('import', "Ma'lumotlar");
+          showToast('Import', 'Tayyor', 'success');
+          refreshAllTables();
+        } catch (err) { showToast('Xato', err.message, 'error'); }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    // ==================== DATA ====================
+    function saveData() {
+      const title = document.getElementById('dataTitle').value.trim();
+      const value = document.getElementById('dataValue').value.trim();
+      if (!title || !value) { showToast('Xato', "To'ldiring", 'error'); return; }
+      let data = getData(STORAGE_KEYS.DATA);
+      if (editDataId) {
+        const idx = data.findIndex(d => String(d.id) === String(editDataId));
+        if (idx !== -1) {
+          data[idx] = { ...data[idx], title, value, editedBy: currentUser.login, editedAt: new Date().toLocaleString('uz-UZ') };
+          addLog('tahrirlash', title);
+        }
+        editDataId = null;
+        document.getElementById('cancelEditBtn').style.display = 'none';
+      } else {
+        data.unshift({ id: Date.now() + Math.random(), title, value, createdBy: currentUser.login, createdAt: new Date().toLocaleString('uz-UZ') });
+        addLog('qoshish', title);
+      }
+      setData(STORAGE_KEYS.DATA, data);
+      document.getElementById('dataTitle').value = '';
+      document.getElementById('dataValue').value = '';
+      loadDataTable(); updateStats();
+      showToast('Saqlandi', title, 'success');
+    }
+
+    function editData(id) {
+      const data = getData(STORAGE_KEYS.DATA);
+      const item = data.find(d => String(d.id) === String(id));
+      if (item) {
+        document.getElementById('dataTitle').value = item.title;
+        document.getElementById('dataValue').value = item.value;
+        editDataId = id;
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+      }
+    }
+
+    function cancelEdit() {
+      document.getElementById('dataTitle').value = '';
+      document.getElementById('dataValue').value = '';
+      editDataId = null;
+      document.getElementById('cancelEditBtn').style.display = 'none';
+    }
+
+    function deleteData(id) {
+      if (confirm("O'chirish?")) {
+        let data = getData(STORAGE_KEYS.DATA);
+        data = data.filter(d => String(d.id) !== String(id));
+        setData(STORAGE_KEYS.DATA, data);
+        addLog('ochirish', 'ID ' + id);
+        loadDataTable(); updateStats();
+      }
+    }
+
+    function archiveData(id) {
+      if (confirm('Arxivlash?')) {
+        let data = getData(STORAGE_KEYS.DATA);
+        let archive = getData(STORAGE_KEYS.ARCHIVE);
+        const item = data.find(d => String(d.id) === String(id));
+        if (item) {
+          archive.unshift({ ...item, archivedBy: currentUser.login, archivedAt: new Date().toLocaleString('uz-UZ') });
+          data = data.filter(d => String(d.id) !== String(id));
+          setData(STORAGE_KEYS.DATA, data);
+          setData(STORAGE_KEYS.ARCHIVE, archive);
+          addLog('arxiv', item.title);
+          loadDataTable(); loadArchiveTable(); updateStats();
+        }
+      }
+    }
+
+    function restoreArchive(id) {
+      let archive = getData(STORAGE_KEYS.ARCHIVE);
+      let data = getData(STORAGE_KEYS.DATA);
+      const item = archive.find(a => String(a.id) === String(id));
+      if (item) {
+        const restored = { ...item };
+        delete restored.archivedBy; delete restored.archivedAt;
+        restored.createdBy = currentUser.login;
+        restored.createdAt = new Date().toLocaleString('uz-UZ');
+        data.unshift(restored);
+        archive = archive.filter(a => String(a.id) !== String(id));
+        setData(STORAGE_KEYS.DATA, data);
+        setData(STORAGE_KEYS.ARCHIVE, archive);
+        loadDataTable(); loadArchiveTable(); updateStats();
+      }
+    }
+
+    function loadDataTable() {
+      const data = getData(STORAGE_KEYS.DATA);
+      const searchEl = document.getElementById('searchData');
+      const search = searchEl ? searchEl.value.toLowerCase() : '';
+      const filtered = search ? data.filter(d => (d.title||'').toLowerCase().includes(search) || (d.value||'').toLowerCase().includes(search)) : data;
+      const tbody = document.getElementById('dataTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = filtered.length === 0
+        ? '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);">Ma\'lumot yo\'q</td></tr>' : '';
+      filtered.forEach((item, idx) => {
+        const idStr = escapeJs(String(item.id));
+        tbody.innerHTML += `<tr>
+          <td>${idx + 1}</td>
+          <td><strong>${escapeHtml(item.title)}</strong></td>
+          <td>${escapeHtml(String(item.value).substring(0, 80))}</td>
+          <td>${escapeHtml(item.createdBy || '-')}</td>
+          <td>${escapeHtml(item.createdAt || '-')}</td>
+          <td><button class="btn-small" onclick="addFavorite('data', '${idStr}', '${escapeJs(item.title)}')" style="background:transparent;">⭐</button></td>
+          <td>
+            <button onclick="editData('${idStr}')" class="btn-small" style="background: var(--cyan);">✎</button>
+            <button onclick="archiveData('${idStr}')" class="btn-small" style="background: var(--yellow);">📁</button>
+            <button onclick="deleteData('${idStr}')" class="btn-small" style="background: var(--red);">✕</button>
+          </td>
+        </tr>`;
+      });
+    }
+
+    function filterData() { loadDataTable(); }
+
+    function loadArchiveTable() {
+      const archive = getData(STORAGE_KEYS.ARCHIVE);
+      const searchEl = document.getElementById('searchArchive');
+      const search = searchEl ? searchEl.value.toLowerCase() : '';
+      const filtered = search ? archive.filter(a => (a.title||'').toLowerCase().includes(search)) : archive;
+      const tbody = document.getElementById('archiveTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = filtered.length === 0
+        ? '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Arxiv bo\'sh</td></tr>' : '';
+      filtered.forEach((item, idx) => {
+        const idStr = escapeJs(String(item.id));
+        tbody.innerHTML += `<tr>
+          <td>${idx + 1}</td>
+          <td><strong>${escapeHtml(item.title)}</strong></td>
+          <td>${escapeHtml(String(item.value).substring(0, 80))}</td>
+          <td>${escapeHtml(item.archivedBy || '-')}</td>
+          <td>${escapeHtml(item.archivedAt || '-')}</td>
+          <td><button onclick="restoreArchive('${idStr}')" class="btn-small" style="background: var(--green);">↩</button></td>
+        </tr>`;
+      });
+    }
+
+    function filterArchive() { loadArchiveTable(); }
+
+    // ==================== EMPLOYEES ====================
+    function loadEmployeesTable() {
+      const employees = getData(STORAGE_KEYS.EMPLOYEES);
+      const tbody = document.getElementById('employeesTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = employees.length === 0
+        ? '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);">Xodim yo\'q</td></tr>' : '';
+      employees.forEach((emp, idx) => {
+        const statusBadge = emp.status === 'active' ? '<span class="badge badge-success">✅</span>'
+          : emp.status === 'vacation' ? '<span class="badge badge-warning">🏖️</span>'
+          : '<span class="badge badge-danger">🔒</span>';
+        const posConfig = POSITION_CONFIG[emp.position] || POSITION_CONFIG.other;
+        const loginJs = escapeJs(emp.login);
+        tbody.innerHTML += `<tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(emp.login)}</td>
+          <td>${escapeHtml(emp.fullname || '-')}</td>
+          <td>${escapeHtml(emp.email || '-')}</td>
+          <td>${posConfig.icon} ${posConfig.name}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button onclick="resetPassword('${loginJs}')" class="btn-small" style="background: var(--yellow);">🔑</button>
+            <button onclick="deleteEmployee('${loginJs}')" class="btn-small" style="background: var(--red);">✕</button>
+          </td>
+        </tr>`;
+      });
+    }
+
+    function addEmployee() {
+      const login = document.getElementById('empLogin').value.trim();
+      const password = document.getElementById('empPassword').value.trim();
+      const fullname = document.getElementById('empName').value.trim();
+      const email = document.getElementById('empEmail').value.trim();
+      const phone = document.getElementById('empPhone').value.trim();
+      const position = document.getElementById('empPosition').value;
+      const status = document.getElementById('empStatus').value;
+
+      if (!login || !password) { showToast('Xato', "Login/parol", 'error'); return; }
+      if (login.length < 3) { showToast('Xato', "Login ≥3", 'error'); return; }
+      if (password.length < 4) { showToast('Xato', "Parol ≥4", 'error'); return; }
+      if (RESERVED_LOGINS.includes(login.toLowerCase())) { showToast('Xato', 'Login band', 'error'); return; }
+
+      let employees = getData(STORAGE_KEYS.EMPLOYEES);
+      if (employees.find(e => e.login.toLowerCase() === login.toLowerCase())) { showToast('Xato', 'Login mavjud', 'error'); return; }
+      if (email && employees.some(e => (e.email || '').toLowerCase() === email.toLowerCase())) {
+        showToast('Xato', 'Email mavjud', 'error'); return;
+      }
+
+      employees.push({ login, password, fullname, email: email || null, phone: phone || null,
+        position: position || 'other', status, role: 'employee', createdAt: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.EMPLOYEES, employees);
+      addLog('qoshish', 'Xodim: ' + login);
+      loadEmployeesTable(); loadVacationSelect(); updateStats();
+      ['empLogin', 'empPassword', 'empName', 'empEmail', 'empPhone'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      showToast('Xodim', 'Qo\'shildi', 'success');
+      addNotification('Yangi xodim', login, 'success');
+    }
+
+    function resetPassword(login) {
+      const newPass = prompt('Yangi parol (≥4):');
+      if (!newPass) return;
+      if (newPass.length < 4) { showToast('Xato', "≥4", 'error'); return; }
+      let employees = getData(STORAGE_KEYS.EMPLOYEES);
+      const emp = employees.find(e => e.login === login);
+      if (emp) {
+        emp.password = newPass;
+        setData(STORAGE_KEYS.EMPLOYEES, employees);
+        addLog('tahrirlash', 'Parol: ' + login);
+        showToast('Parol', 'O\'zgartirildi', 'success');
+      }
+    }
+
+    function deleteEmployee(login) {
+      if (RESERVED_LOGINS.includes(login.toLowerCase())) { showToast('Xato', 'Himoyalangan', 'error'); return; }
+      if (currentUser && login === currentUser.login) { showToast('Xato', "O'zingizni o'chira olmaysiz", 'error'); return; }
+      if (confirm(login + " o'chirish?")) {
+        let employees = getData(STORAGE_KEYS.EMPLOYEES);
+        employees = employees.filter(e => e.login !== login);
+        setData(STORAGE_KEYS.EMPLOYEES, employees);
+        let vacations = getData(STORAGE_KEYS.VACATIONS);
+        vacations = vacations.filter(v => v.login !== login);
+        setData(STORAGE_KEYS.VACATIONS, vacations);
+        addLog('ochirish', 'Xodim: ' + login);
+        loadEmployeesTable(); loadVacationSelect(); loadVacationTable(); updateStats();
+        showToast('Xodim', 'O\'chirildi', 'success');
+      }
+    }
+
+    // ==================== VACATION ====================
+    function loadVacationSelect() {
+      const employees = getData(STORAGE_KEYS.EMPLOYEES);
+      const activeEmps = employees.filter(e => e.status === 'active');
+      const select = document.getElementById('vacationEmployee');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- Tanlang --</option>';
+      activeEmps.forEach(emp => {
+        const opt = document.createElement('option');
+        opt.value = emp.login;
+        opt.textContent = emp.fullname || emp.login;
+        select.appendChild(opt);
+      });
+    }
+
+    function loadVacationTable() {
+      const vacations = getData(STORAGE_KEYS.VACATIONS);
+      const tbody = document.getElementById('vacationTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = vacations.length === 0
+        ? '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Yo\'q</td></tr>' : '';
+      vacations.forEach((vac, idx) => {
+        const daysLeft = Math.ceil((new Date(vac.endDate) - new Date()) / (1000 * 60 * 60 * 24));
+        const loginJs = escapeJs(vac.login);
+        tbody.innerHTML += `<tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(vac.login)}</td>
+          <td>${escapeHtml(vac.startDate)}</td>
+          <td>${escapeHtml(vac.endDate)}</td>
+          <td>${daysLeft > 0 ? daysLeft + ' kun' : 'Tugagan'}</td>
+          <td><button onclick="endVacation('${loginJs}')" class="btn-small" style="background: var(--yellow);">🏖️</button></td>
+        </tr>`;
+      });
+    }
+
+    function startVacation() {
+      const login = document.getElementById('vacationEmployee').value;
+      const startDate = document.getElementById('vacationStart').value;
+      const endDate = document.getElementById('vacationEnd').value;
+      if (!login || !startDate || !endDate) { showToast('Xato', "To'ldiring", 'error'); return; }
+      if (new Date(endDate) <= new Date(startDate)) { showToast('Xato', "Sana xato", 'error'); return; }
+      let employees = getData(STORAGE_KEYS.EMPLOYEES);
+      const emp = employees.find(e => e.login === login);
+      if (!emp) { showToast('Xato', 'Topilmadi', 'error'); return; }
+      emp.status = 'vacation';
+      setData(STORAGE_KEYS.EMPLOYEES, employees);
+      let vacations = getData(STORAGE_KEYS.VACATIONS);
+      vacations.push({ login, startDate, endDate, startedBy: currentUser.login, startedAt: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.VACATIONS, vacations);
+      addLog('tatil', login);
+      loadVacationSelect(); loadVacationTable(); loadEmployeesTable(); updateStats();
+      document.getElementById('vacationStart').value = '';
+      document.getElementById('vacationEnd').value = '';
+      showToast('Ta\'til', login, 'success');
+    }
+
+    function endVacation(login) {
+      if (confirm(login + " tugatish?")) {
+        let employees = getData(STORAGE_KEYS.EMPLOYEES);
+        const emp = employees.find(e => e.login === login);
+        if (emp) { emp.status = 'active'; setData(STORAGE_KEYS.EMPLOYEES, employees); }
+        let vacations = getData(STORAGE_KEYS.VACATIONS);
+        vacations = vacations.filter(v => v.login !== login);
+        setData(STORAGE_KEYS.VACATIONS, vacations);
+        addLog('tatil', login + ' tugadi');
+        loadVacationSelect(); loadVacationTable(); loadEmployeesTable(); updateStats();
+      }
+    }
+
+    // ==================== DEVICES ====================
+    function loadDevicesList() {
+      const devices = getData(STORAGE_KEYS.DEVICES);
+      const container = document.getElementById('devicesList');
+      if (!container) return;
+      container.innerHTML = devices.length === 0
+        ? '<p style="text-align:center;color:var(--text-dim);">Yo\'q</p>' : '';
+      devices.forEach(device => {
+        const icon = device.type === 'computer' ? '💻' : device.type === 'phone' ? '📱' : '📟';
+        const idJs = escapeJs(device.id);
+        container.innerHTML += `<div class="device-item">
+          <div><span class="device-icon">${icon}</span><strong>${escapeHtml(device.name)}</strong><br>
+            <small style="color:var(--text-dim);">ID: ${escapeHtml(device.id)}</small></div>
+          <button onclick="deleteDevice('${idJs}')" class="btn-small" style="background: var(--red); width: auto;">✕</button>
+        </div>`;
+      });
+    }
+
+    function addDevice() {
+      const name = document.getElementById('deviceName').value.trim();
+      const type = document.getElementById('deviceType').value;
+      if (!name) { showToast('Xato', 'Nom', 'error'); return; }
+      let devices = getData(STORAGE_KEYS.DEVICES);
+      devices.push({ id: 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8),
+        name, type, createdBy: currentUser.login, createdAt: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.DEVICES, devices);
+      addLog('qoshish', 'Qurilma: ' + name);
+      loadDevicesList(); updateStats();
+      document.getElementById('deviceName').value = '';
+      showToast('Qurilma', 'Qo\'shildi', 'success');
+    }
+
+    function deleteDevice(id) {
+      if (confirm("O'chirish?")) {
+        let devices = getData(STORAGE_KEYS.DEVICES);
+        devices = devices.filter(d => d.id !== id);
+        setData(STORAGE_KEYS.DEVICES, devices);
+        loadDevicesList(); updateStats();
+      }
+    }
+
+    // ==================== PROJECTS / FINANCE / CLIENTS / HIRE / CALLS ====================
+    function loadProjectsTable() {
+      const items = getData(STORAGE_KEYS.PROJECTS);
+      const tbody = document.getElementById('projectsTableBody');
+      if (!tbody) return;
+      const sm = { active: 'badge-success', review: 'badge-warning', done: 'badge-info' };
+      tbody.innerHTML = items.length === 0 ? '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Yo\'q</td></tr>' : '';
+      items.forEach((p, idx) => {
+        const idJs = escapeJs(String(p.id));
+        tbody.innerHTML += `<tr>
+          <td>${idx + 1}</td><td>${escapeHtml(p.name)}</td>
+          <td>${escapeHtml(p.manager || '-')}</td>
+          <td><span class="badge ${sm[p.status] || 'badge-info'}">${escapeHtml(p.status)}</span></td>
+          <td>${escapeHtml(p.createdAt)}</td>
+          <td><button onclick="deleteProject('${idJs}')" class="btn-small" style="background: var(--red);">✕</button></td>
+        </tr>`;
+      });
+    }
+    function addProject() {
+      const name = document.getElementById('projName').value.trim();
+      const manager = document.getElementById('projManager').value.trim();
+      const status = document.getElementById('projStatus').value;
+      if (!name) { showToast('Xato', 'Nom', 'error'); return; }
+      const items = getData(STORAGE_KEYS.PROJECTS);
+      items.unshift({ id: Date.now() + Math.random(), name, manager, status, createdBy: currentUser.login, createdAt: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.PROJECTS, items);
+      addLog('qoshish', 'Loyiha: ' + name);
+      loadProjectsTable();
+      document.getElementById('projName').value = '';
+      document.getElementById('projManager').value = '';
+      showToast('Loyiha', 'Qo\'shildi', 'success');
+    }
+    function deleteProject(id) {
+      if (!confirm("O'chirish?")) return;
+      let items = getData(STORAGE_KEYS.PROJECTS);
+      items = items.filter(p => String(p.id) !== id);
+      setData(STORAGE_KEYS.PROJECTS, items);
+      loadProjectsTable();
+    }
+
+    function formatMoney(n) { return new Intl.NumberFormat('uz-UZ').format(n) + " so'm"; }
+
+    function loadFinanceTable() {
+      const items = getData(STORAGE_KEYS.FINANCE);
+      const tbody = document.getElementById('financeTableBody');
+      if (!tbody) return;
+      let income = 0, expense = 0;
+      tbody.innerHTML = items.length === 0 ? '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Yo\'q</td></tr>' : '';
+      items.forEach((item, idx) => {
+        if (item.type === 'income') income += item.amount; else expense += item.amount;
+        const idJs = escapeJs(String(item.id));
+        tbody.innerHTML += `<tr>
+          <td>${idx + 1}</td><td>${escapeHtml(item.title)}</td>
+          <td><span class="badge ${item.type === 'income' ? 'badge-success' : 'badge-danger'}">${item.type === 'income' ? '🟢' : '🔴'}</span></td>
+          <td style="color:${item.type === 'income' ? 'var(--green)' : 'var(--red)'};font-family:monospace;">${formatMoney(item.amount)}</td>
+          <td>${escapeHtml(item.createdAt)}</td>
+          <td><button onclick="deleteFinance('${idJs}')" class="btn-small" style="background: var(--red);">✕</button></td>
+        </tr>`;
+      });
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      set('finIncome', formatMoney(income));
+      set('finExpense', formatMoney(expense));
+      set('finProfit', formatMoney(income - expense));
+    }
+    function addFinance() {
+      const title = document.getElementById('finTitle').value.trim();
+      const amount = parseInt(document.getElementById('finAmount').value);
+      const type = document.getElementById('finType').value;
+      if (!title || !amount || amount <= 0) { showToast('Xato', 'Ma\'lumot', 'error'); return; }
+      const items = getData(STORAGE_KEYS.FINANCE);
+      items.unshift({ id: Date.now() + Math.random(), title, amount, type, createdBy: currentUser.login, createdAt: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.FINANCE, items);
+      addLog('qoshish', 'Moliya: ' + title);
+      loadFinanceTable();
+      document.getElementById('finTitle').value = '';
+      document.getElementById('finAmount').value = '';
+      showToast('Moliya', 'Qo\'shildi', 'success');
+    }
+    function deleteFinance(id) {
+      if (!confirm("O'chirish?")) return;
+      let items = getData(STORAGE_KEYS.FINANCE);
+      items = items.filter(i => String(i.id) !== id);
+      setData(STORAGE_KEYS.FINANCE, items);
+      loadFinanceTable();
+    }
+
+    function loadClientsTable() {
+      const items = getData(STORAGE_KEYS.CLIENTS);
+      const tbody = document.getElementById('clientsTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = items.length === 0 ? '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Yo\'q</td></tr>' : '';
+      items.forEach((c, idx) => {
+        const idJs = escapeJs(String(c.id));
+        tbody.innerHTML += `<tr>
+          <td>${idx + 1}</td><td>${escapeHtml(c.name)}</td>
+          <td>${escapeHtml(c.phone || '-')}</td><td>${escapeHtml(c.company || '-')}</td>
+          <td>${escapeHtml(c.createdAt)}</td>
+          <td><button onclick="deleteClient('${idJs}')" class="btn-small" style="background: var(--red);">✕</button></td>
+        </tr>`;
+      });
+    }
+    function addClient() {
+      const name = document.getElementById('clientName').value.trim();
+      const phone = document.getElementById('clientPhone').value.trim();
+      const company = document.getElementById('clientCompany').value.trim();
+      if (!name) { showToast('Xato', 'Ism', 'error'); return; }
+      const items = getData(STORAGE_KEYS.CLIENTS);
+      items.unshift({ id: Date.now() + Math.random(), name, phone, company, createdBy: currentUser.login, createdAt: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.CLIENTS, items);
+      addLog('qoshish', 'Mijoz: ' + name);
+      loadClientsTable();
+      ['clientName', 'clientPhone', 'clientCompany'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      showToast('Mijoz', 'Qo\'shildi', 'success');
+    }
+    function deleteClient(id) {
+      if (!confirm("O'chirish?")) return;
+      let items = getData(STORAGE_KEYS.CLIENTS);
+      items = items.filter(c => String(c.id) !== id);
+      setData(STORAGE_KEYS.CLIENTS, items);
+      loadClientsTable();
+    }
+
+    function loadHireTable() {
+      const items = getData(STORAGE_KEYS.HIRES);
+      const tbody = document.getElementById('hireTableBody');
+      if (!tbody) return;
+      const sm = { new: 'badge-info', interview: 'badge-warning', hired: 'badge-success', rejected: 'badge-danger' };
+      tbody.innerHTML = items.length === 0 ? '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Yo\'q</td></tr>' : '';
+      items.forEach((h, idx) => {
+        const idJs = escapeJs(String(h.id));
+        tbody.innerHTML += `<tr>
+          <td>${idx + 1}</td><td>${escapeHtml(h.name)}</td>
+          <td>${escapeHtml(h.position || '-')}</td><td>${escapeHtml(h.phone || '-')}</td>
+          <td><span class="badge ${sm[h.status]}">${escapeHtml(h.status)}</span></td>
+          <td><button onclick="deleteCandidate('${idJs}')" class="btn-small" style="background: var(--red);">✕</button></td>
+        </tr>`;
+      });
+    }
+    function addCandidate() {
+      const name = document.getElementById('hireName').value.trim();
+      const position = document.getElementById('hirePosition').value.trim();
+      const phone = document.getElementById('hirePhone').value.trim();
+      const status = document.getElementById('hireStatus').value;
+      if (!name) { showToast('Xato', 'Ism', 'error'); return; }
+      const items = getData(STORAGE_KEYS.HIRES);
+      items.unshift({ id: Date.now() + Math.random(), name, position, phone, status, createdBy: currentUser.login, createdAt: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.HIRES, items);
+      loadHireTable();
+      ['hireName', 'hirePosition', 'hirePhone'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      showToast('Nomzod', 'Qo\'shildi', 'success');
+    }
+    function deleteCandidate(id) {
+      if (!confirm("O'chirish?")) return;
+      let items = getData(STORAGE_KEYS.HIRES);
+      items = items.filter(h => String(h.id) !== id);
+      setData(STORAGE_KEYS.HIRES, items);
+      loadHireTable();
+    }
+
+    function loadCallsTable() {
+      const items = getData(STORAGE_KEYS.CALLS);
+      const tbody = document.getElementById('callsTableBody');
+      if (!tbody) return;
+      const sm = { new: 'badge-info', progress: 'badge-warning', done: 'badge-success' };
+      tbody.innerHTML = items.length === 0 ? '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);">Yo\'q</td></tr>' : '';
+      items.forEach((c, idx) => {
+        const idJs = escapeJs(String(c.id));
+        tbody.innerHTML += `<tr>
+          <td>${idx + 1}</td><td>${escapeHtml(c.from)}</td>
+          <td>${escapeHtml(c.topic)}</td>
+          <td><span class="badge ${sm[c.status]}">${escapeHtml(c.status)}</span></td>
+          <td>${escapeHtml(c.createdAt)}</td>
+          <td><button onclick="deleteCall('${idJs}')" class="btn-small" style="background: var(--red);">✕</button></td>
+        </tr>`;
+      });
+    }
+    function addCall() {
+      const from = document.getElementById('callFrom').value.trim();
+      const topic = document.getElementById('callTopic').value.trim();
+      const status = document.getElementById('callStatus').value;
+      if (!from || !topic) { showToast('Xato', "To'ldiring", 'error'); return; }
+      const items = getData(STORAGE_KEYS.CALLS);
+      items.unshift({ id: Date.now() + Math.random(), from, topic, status, createdBy: currentUser.login, createdAt: new Date().toLocaleString('uz-UZ') });
+      setData(STORAGE_KEYS.CALLS, items);
+      loadCallsTable();
+      document.getElementById('callFrom').value = '';
+      document.getElementById('callTopic').value = '';
+      showToast('Qo\'ng\'iroq', 'Qo\'shildi', 'success');
+    }
+    function deleteCall(id) {
+      if (!confirm("O'chirish?")) return;
+      let items = getData(STORAGE_KEYS.CALLS);
+      items = items.filter(c => String(c.id) !== id);
+      setData(STORAGE_KEYS.CALLS, items);
+      loadCallsTable();
+    }
+
+    // ==================== LOGS ====================
+    function loadLogs() {
+      const filterEl = document.getElementById('logFilter');
+      const filter = filterEl ? filterEl.value : 'all';
+      let logs = getData(STORAGE_KEYS.LOGS);
+      if (filter !== 'all') logs = logs.filter(log => log.action === filter);
+      const container = document.getElementById('logsList');
+      if (!container) return;
+      container.innerHTML = logs.length === 0
+        ? '<p style="text-align:center;color:var(--text-dim);padding:20px;">Yo\'q</p>' : '';
+      logs.forEach(log => {
+        container.innerHTML += `<div class="log-item">
+          <div class="log-meta">
+            <span><strong>${escapeHtml(log.user)}</strong></span>
+            <span class="log-action">${escapeHtml(log.action)}</span>
+            <span class="log-time">${escapeHtml(log.time)}</span>
+          </div>
+          <div class="log-details">${escapeHtml(log.details)}</div>
+        </div>`;
+      });
+    }
+
+    // ==================== STATS ====================
+    function updateStats() {
+      const data = getData(STORAGE_KEYS.DATA);
+      const archive = getData(STORAGE_KEYS.ARCHIVE);
+      const employees = getData(STORAGE_KEYS.EMPLOYEES);
+      const devices = getData(STORAGE_KEYS.DEVICES);
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      set('statData', data.length);
+      set('statArchive', archive.length);
+      set('statEmployees', employees.length);
+      set('statDevices', devices.length);
+    }
+
+    function refreshAllTables() {
+      loadDataTable(); loadArchiveTable(); loadEmployeesTable();
+      loadVacationTable(); loadDevicesList(); loadProjectsTable();
+      loadFinanceTable(); loadClientsTable(); loadHireTable(); loadCallsTable();
+      loadTasks(); loadMessages(); renderCalendar(); loadFavorites();
+      loadFeedback(); loadKnowledge();
+      updateStats();
+    }
+
+    // ==================== TETRIS ====================
+    function initBoard() { board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0)); score = 0; gameActive = true; }
+    function spawnPiece() {
+      const pd = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+      piece = { shape: pd.shape.map(r => r.slice()), color: pd.color, x: Math.floor((BOARD_WIDTH - pd.shape[0].length) / 2), y: 0 };
+      if (checkCollision()) {
+        gameActive = false;
+        if (gameLoop) { clearInterval(gameLoop); gameLoop = null; }
+        showToast('O\'yin', 'Game Over: ' + score, 'warning');
+      }
+    }
+    function checkCollision() {
+      if (!piece) return false;
+      for (let y = 0; y < piece.shape.length; y++)
+        for (let x = 0; x < piece.shape[y].length; x++)
+          if (piece.shape[y][x]) {
+            const bx = piece.x + x, by = piece.y + y;
+            if (bx < 0 || bx >= BOARD_WIDTH || by >= BOARD_HEIGHT) return true;
+            if (by >= 0 && board[by][bx]) return true;
+          }
+      return false;
+    }
+    function mergePiece() {
+      for (let y = 0; y < piece.shape.length; y++)
+        for (let x = 0; x < piece.shape[y].length; x++)
+          if (piece.shape[y][x]) {
+            const bx = piece.x + x, by = piece.y + y;
+            if (by >= 0 && by < BOARD_HEIGHT && bx >= 0 && bx < BOARD_WIDTH) board[by][bx] = piece.color;
+          }
+      let lines = 0;
+      for (let y = BOARD_HEIGHT - 1; y >= 0; y--) {
+        let full = true;
+        for (let x = 0; x < BOARD_WIDTH; x++) if (!board[y][x]) { full = false; break; }
+        if (full) { board.splice(y, 1); board.unshift(Array(BOARD_WIDTH).fill(0)); lines++; y++; }
+      }
+      if (lines > 0) {
+        score += lines * 10;
+        if (score >= 100 && gameActive) {
+          gameActive = false;
+          addCoins(5);
+          if (gameLoop) { clearInterval(gameLoop); gameLoop = null; }
+          showToast('Tabriklaymiz', '5 coin!', 'success');
+          return;
+        }
+      }
+      spawnPiece(); drawGame();
+    }
+    function movePiece(dx, dy) {
+      if (!gameActive || !piece) return false;
+      piece.x += dx; piece.y += dy;
+      if (checkCollision()) {
+        piece.x -= dx; piece.y -= dy;
+        if (dy === 1) mergePiece();
+        return false;
+      }
+      drawGame(); return true;
+    }
+    function rotatePiece() {
+      if (!gameActive || !piece) return;
+      const rotated = piece.shape[0].map((_, i) => piece.shape.map(r => r[i]).reverse());
+      const old = piece.shape;
+      piece.shape = rotated;
+      if (checkCollision()) piece.shape = old;
+      drawGame();
+    }
+    function drawGame() {
+      if (!ctx || !canvas) return;
+      ctx.fillStyle = '#0a0e27'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = 'rgba(0,255,136,0.08)';
+      for (let i = 0; i <= BOARD_WIDTH; i++) { ctx.beginPath(); ctx.moveTo(i * BLOCK_SIZE, 0); ctx.lineTo(i * BLOCK_SIZE, canvas.height); ctx.stroke(); }
+      for (let i = 0; i <= BOARD_HEIGHT; i++) { ctx.beginPath(); ctx.moveTo(0, i * BLOCK_SIZE); ctx.lineTo(canvas.width, i * BLOCK_SIZE); ctx.stroke(); }
+      for (let y = 0; y < BOARD_HEIGHT; y++)
+        for (let x = 0; x < BOARD_WIDTH; x++)
+          if (board[y][x]) {
+            ctx.fillStyle = board[y][x];
+            ctx.shadowBlur = 10; ctx.shadowColor = board[y][x];
+            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+          }
+      ctx.shadowBlur = 0;
+      if (piece) {
+        for (let y = 0; y < piece.shape.length; y++)
+          for (let x = 0; x < piece.shape[y].length; x++)
+            if (piece.shape[y][x]) {
+              ctx.fillStyle = piece.color;
+              ctx.shadowBlur = 15; ctx.shadowColor = piece.color;
+              ctx.fillRect((piece.x + x) * BLOCK_SIZE, (piece.y + y) * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+            }
+      }
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#00ff88'; ctx.font = 'bold 18px monospace';
+      ctx.fillText('BALL: ' + score, 10, 25);
+    }
+    function gameUpdate() { if (gameActive) movePiece(0, 1); }
+    function startGame() {
+      if (gameLoop) { clearInterval(gameLoop); gameLoop = null; }
+      initBoard(); spawnPiece();
+      if (gameActive) gameLoop = setInterval(gameUpdate, 400);
+      drawGame();
+    }
+    function updateVacationCoins() {
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      set('vacationCoins', getData(STORAGE_KEYS.COINS, 0));
+      set('vacationWins', getData(STORAGE_KEYS.GAMES_WON, 0));
+    }
+    function addCoins(amount) {
+      let coins = getData(STORAGE_KEYS.COINS, 0);
+      let wins = getData(STORAGE_KEYS.GAMES_WON, 0);
+      coins += amount; wins++;
+      setData(STORAGE_KEYS.COINS, coins);
+      setData(STORAGE_KEYS.GAMES_WON, wins);
+      updateVacationCoins();
+    }
+
+    // ==================== TABS ====================
+    function switchTab(tabName, el) {
+      Object.keys(TAB_INFO).forEach(t => {
+        const el2 = document.getElementById(t + 'Tab');
+        if (el2) el2.classList.add('hidden');
+      });
+      const target = document.getElementById(tabName + 'Tab');
+      if (target) target.classList.remove('hidden');
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      if (el) el.classList.add('active');
+
+      try {
+        if (tabName === 'dashboard') loadDashboard();
+        if (tabName === 'kpi') loadKPI();
+        if (tabName === 'data') loadDataTable();
+        if (tabName === 'archive') loadArchiveTable();
+        if (tabName === 'employees') loadEmployeesTable();
+        if (tabName === 'vacation') { loadVacationSelect(); loadVacationTable(); }
+        if (tabName === 'devices') loadDevicesList();
+        if (tabName === 'system') initSystemMonitor();
+        if (tabName === 'devmonitor') { renderDevMonitor(); startDevMonitor(); }
+        if (tabName === 'audit') loadAuditLog();
+        if (tabName === 'security') loadSecurity();
+        if (tabName === 'projects') loadProjectsTable();
+        if (tabName === 'finance') loadFinanceTable();
+        if (tabName === 'clients') loadClientsTable();
+        if (tabName === 'hire') loadHireTable();
+        if (tabName === 'calls') loadCallsTable();
+        if (tabName === 'tasks') loadTasks();
+        if (tabName === 'messages') loadMessages();
+        if (tabName === 'calendar') renderCalendar();
+        if (tabName === 'favorites') loadFavorites();
+        if (tabName === 'feedback') loadFeedback();
+        if (tabName === 'knowledge') loadKnowledge();
+        if (tabName === 'profile') loadProfile();
+        if (tabName === 'sync') displaySyncQR();
+        if (tabName === 'logs') loadLogs();
+      } catch (e) {
+        logError('tab', 'Xato ' + tabName + ': ' + e.message, e.stack);
+        showToast('Xato', e.message, 'error');
+      }
+    }
+
+    // ==================== LOGIN ====================
+    function login() {
+      const startTime = Date.now();
+      try {
+        const loginVal = document.getElementById('loginUsername').value.trim();
+        const passwordVal = document.getElementById('loginPassword').value;
+        if (!loginVal || !passwordVal) { showToast('Xato', "To'ldiring", 'error'); return; }
+
+        if (loginVal === 'boshliq' && passwordVal === 'boshliq123') {
+          currentUser = { login: 'boshliq', role: 'boss', position: 'boss' };
+          afterLogin(); recordPerformance(startTime);
+          logApi('POST', '/api/login', 200, Date.now() - startTime);
+          return;
+        }
+        const employees = getData(STORAGE_KEYS.EMPLOYEES);
+        const employee = employees.find(e => e.login === loginVal && e.password === passwordVal);
+        if (employee) {
+          if (employee.status === 'blocked') {
+            showToast('Xato', 'Bloklangansiz', 'error');
+            logApi('POST', '/api/login', 403, Date.now() - startTime);
+            return;
+          }
+          if (employee.status === 'vacation') {
+            currentUser = { login: loginVal, role: 'vacation', position: employee.position || 'other' };
+            showVacationMode(); recordPerformance(startTime);
+            logApi('POST', '/api/login', 200, Date.now() - startTime);
+            return;
+          }
+          currentUser = { login: loginVal, role: 'employee', position: employee.position || 'other' };
+          afterLogin(); recordPerformance(startTime);
+          logApi('POST', '/api/login', 200, Date.now() - startTime);
+          return;
+        }
+        showToast('Xato', "Noto'g'ri login/parol", 'error');
+        logApi('POST', '/api/login', 401, Date.now() - startTime);
+      } catch (e) {
+        logError('login', e.message, e.stack);
+      }
+    }
+
+    function afterLogin() {
+      addLog('kirish', currentUser.login + ' kirdi');
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('registerScreen').classList.add('hidden');
+      document.getElementById('mainScreen').classList.remove('hidden');
+
+      document.getElementById('welcomeMsg').textContent = '◈ ASSALOMU ALAYKUM, ' + currentUser.login.toUpperCase() + '!';
+      showPositionBadge();
+      buildStatsForUser();
+      buildTabsForUser();
+      updateStats();
+      updateNotifCount();
+      startClock();
+
+      const config = getUserPositionConfig();
+      if (config.tabs.includes('dashboard')) loadDashboard();
+      if (config.tabs.includes('data')) loadDataTable();
+      if (config.tabs.includes('tasks')) loadTasks();
+      if (config.tabs.includes('messages')) loadMessages();
+      if (config.tabs.includes('calendar')) renderCalendar();
+      if (config.tabs.includes('favorites')) loadFavorites();
+      if (config.tabs.includes('system')) initSystemMonitor();
+      if (config.tabs.includes('devmonitor')) startDevMonitor();
+
+      logConsole('info', 'User logged in: ' + currentUser.login);
+      showToast('Xush kelibsiz', currentUser.login, 'success');
+      addNotification('Kirish', currentUser.login + ' kirdi', 'info');
+    }
+
+    function showVacationMode() {
+      addLog('kirish', currentUser.login + " ta'til");
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('registerScreen').classList.add('hidden');
+      document.getElementById('mainScreen').classList.add('hidden');
+      document.getElementById('vacationGameScreen').classList.remove('hidden');
+      document.getElementById('vacationUserName').textContent = '◈ ' + currentUser.login;
+      canvas = document.getElementById('gameCanvas');
+      ctx = canvas.getContext('2d');
+      updateVacationCoins();
+      startGame();
+    }
+
+    function exitVacationMode() {
+      if (gameLoop) { clearInterval(gameLoop); gameLoop = null; }
+      gameActive = false;
+      document.getElementById('vacationGameScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      currentUser = null;
+    }
+
+    function logout() {
+      if (sysMonitorInterval) { clearInterval(sysMonitorInterval); sysMonitorInterval = null; }
+      if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+      if (devMonitorInterval) { clearInterval(devMonitorInterval); devMonitorInterval = null; }
+      addLog('chiqish', currentUser ? currentUser.login : '');
+      document.getElementById('mainScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+      currentUser = null;
+    }
+
+    // ==================== REGISTER ====================
+    function showRegisterScreen() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('registerScreen').classList.remove('hidden');
+      clearRegisterForm();
+    }
+    function showLoginScreen() {
+      document.getElementById('registerScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      clearRegisterForm();
+    }
+    function clearRegisterForm() {
+      ['regLogin', 'regEmail', 'regPhone', 'regFullname', 'regBirthdate', 'regPosition', 'regDepartment', 'regPassword', 'regPasswordConfirm'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      ['regLoginError', 'regEmailError', 'regPhoneError', 'regFullnameError', 'regBirthdateError', 'regPositionError', 'regPasswordError', 'regPasswordConfirmError', 'regSuccessMsg'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.innerHTML = '';
+      });
+      const bar = document.getElementById('passStrengthBar');
+      if (bar) { bar.style.width = '0'; bar.style.background = 'transparent'; }
+      document.querySelectorAll('.toggle-pass').forEach(i => i.textContent = '👁️');
+      const p1 = document.getElementById('regPassword'); const p2 = document.getElementById('regPasswordConfirm');
+      if (p1) p1.type = 'password'; if (p2) p2.type = 'password';
+    }
+    function togglePassword(id, el) {
+      const input = document.getElementById(id);
+      if (!input) return;
+      input.type = input.type === 'password' ? 'text' : 'password';
+      el.textContent = input.type === 'password' ? '👁️' : '🙈';
+    }
+    function checkPasswordStrength() {
+      const pass = document.getElementById('regPassword').value;
+      const bar = document.getElementById('passStrengthBar');
+      if (!bar) return;
+      let s = 0;
+      if (pass.length >= 4) s++;
+      if (pass.length >= 8) s++;
+      if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) s++;
+      if (/[0-9]/.test(pass)) s++;
+      if (/[^A-Za-z0-9]/.test(pass)) s++;
+      const w = ['0%', '20%', '40%', '60%', '80%', '100%'];
+      const c = ['transparent', '#ff3366', '#ff9900', '#ffcc00', '#00d4ff', '#00ff88'];
+      bar.style.width = w[Math.min(s, 5)];
+      bar.style.background = c[Math.min(s, 5)];
+    }
+    function isValidEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+    function cleanPhone(phone) { return phone.replace(/\D/g, ''); }
+    function calculateAge(birthdate) {
+      if (!birthdate) return null;
+      const today = new Date();
+      const birth = new Date(birthdate);
+      let age = today.getFullYear() - birth.getFullYear();
+      const m = today.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+      return age;
+    }
+    function checkLoginAvailability() {
+      if (loginCheckTimer) clearTimeout(loginCheckTimer);
+      loginCheckTimer = setTimeout(() => {
+        const val = document.getElementById('regLogin').value.trim();
+        const errorEl = document.getElementById('regLoginError');
+        if (!val) { errorEl.innerHTML = ''; return; }
+        if (RESERVED_LOGINS.includes(val.toLowerCase())) { errorEl.innerHTML = '❌ Band!'; return; }
+        const employees = getData(STORAGE_KEYS.EMPLOYEES);
+        if (employees.some(e => e.login.toLowerCase() === val.toLowerCase())) { errorEl.innerHTML = '❌ Mavjud!'; return; }
+        errorEl.innerHTML = '<span style="color: #00ff88;">✅ Bo\'sh</span>';
+      }, 300);
+    }
+    function checkEmailAvailability() {
+      if (emailCheckTimer) clearTimeout(emailCheckTimer);
+      emailCheckTimer = setTimeout(() => {
+        const val = document.getElementById('regEmail').value.trim().toLowerCase();
+        const errorEl = document.getElementById('regEmailError');
+        if (!val) { errorEl.innerHTML = ''; return; }
+        if (!isValidEmail(val)) { errorEl.innerHTML = '❌ Format!'; return; }
+        const employees = getData(STORAGE_KEYS.EMPLOYEES);
+        if (employees.some(e => (e.email || '').toLowerCase() === val)) { errorEl.innerHTML = '❌ Band!'; return; }
+        errorEl.innerHTML = '<span style="color: #00ff88;">✅ Bo\'sh</span>';
+      }, 300);
+    }
+    function onRegInput() {
+      const login = document.getElementById('regLogin').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const fullname = document.getElementById('regFullname').value.trim();
+      const birthdate = document.getElementById('regBirthdate').value;
+      const password = document.getElementById('regPassword').value;
+      const confirm = document.getElementById('regPasswordConfirm').value;
+
+      const loginError = document.getElementById('regLoginError');
+      if (login.length > 0 && login.length < 3) loginError.innerHTML = '❌ ≥3 belgi.';
+      else if (login.length >= 3) checkLoginAvailability();
+      else loginError.innerHTML = '';
+
+      const emailError = document.getElementById('regEmailError');
+      if (email.length > 0) checkEmailAvailability();
+      else emailError.innerHTML = '';
+
+      const phoneError = document.getElementById('regPhoneError');
+      if (phone.length > 0 && cleanPhone(phone).length < 9) phoneError.innerHTML = '❌ ≥9 raqam.';
+      else phoneError.innerHTML = '';
+
+      const fullnameError = document.getElementById('regFullnameError');
+      fullnameError.innerHTML = (fullname.length > 0 && fullname.length < 2) ? '❌ ≥2 belgi.' : '';
+
+      const birthdateError = document.getElementById('regBirthdateError');
+      if (birthdate) {
+        const age = calculateAge(birthdate);
+        if (age !== null && age < 18) birthdateError.innerHTML = '❌ 18+ kerak.';
+        else birthdateError.innerHTML = '';
+      } else birthdateError.innerHTML = '';
+
+      const passwordError = document.getElementById('regPasswordError');
+      passwordError.innerHTML = (password.length > 0 && password.length < 4) ? '❌ ≥4 belgi.' : '';
+
+      const confirmError = document.getElementById('regPasswordConfirmError');
+      confirmError.innerHTML = (confirm.length > 0 && password !== confirm) ? '❌ Mos emas!' : '';
+    }
+    function register() {
+      const login = document.getElementById('regLogin').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const fullname = document.getElementById('regFullname').value.trim();
+      const birthdate = document.getElementById('regBirthdate').value;
+      const position = document.getElementById('regPosition').value;
+      const department = document.getElementById('regDepartment').value;
+      const password = document.getElementById('regPassword').value;
+      const confirm = document.getElementById('regPasswordConfirm').value;
+      const successMsg = document.getElementById('regSuccessMsg');
+
+      successMsg.innerHTML = ''; successMsg.style.color = '#ff3366';
+
+      if (!login || !email || !phone || !fullname || !position || !password || !confirm) {
+        successMsg.innerHTML = '❌ Barcha * to\'ldiring!'; return;
+      }
+      if (login.length < 3) { document.getElementById('regLoginError').innerHTML = '❌ ≥3.'; return; }
+      if (RESERVED_LOGINS.includes(login.toLowerCase())) { document.getElementById('regLoginError').innerHTML = '❌ Band!'; return; }
+      if (!isValidEmail(email)) { document.getElementById('regEmailError').innerHTML = '❌ Format!'; return; }
+      if (cleanPhone(phone).length < 9) { document.getElementById('regPhoneError').innerHTML = '❌ ≥9 raqam.'; return; }
+      if (fullname.length < 2) { document.getElementById('regFullnameError').innerHTML = '❌ ≥2.'; return; }
+      if (birthdate) {
+        const age = calculateAge(birthdate);
+        if (age !== null && age < 18) { document.getElementById('regBirthdateError').innerHTML = '❌ 18+.'; return; }
+      }
+      if (password.length < 4) { document.getElementById('regPasswordError').innerHTML = '❌ ≥4.'; return; }
+      if (password !== confirm) { document.getElementById('regPasswordConfirmError').innerHTML = '❌ Mos emas!'; return; }
+
+      let employees = getData(STORAGE_KEYS.EMPLOYEES);
+      if (employees.some(e => e.login.toLowerCase() === login.toLowerCase())) { document.getElementById('regLoginError').innerHTML = '❌ Mavjud!'; return; }
+      if (employees.some(e => (e.email || '').toLowerCase() === email.toLowerCase())) { document.getElementById('regEmailError').innerHTML = '❌ Mavjud!'; return; }
+
+      employees.push({
+        login, email, phone, fullname, birthdate: birthdate || null,
+        position, department: department || null, password,
+        status: 'active', role: 'employee',
+        registeredAt: new Date().toLocaleString('uz-UZ')
+      });
+      setData(STORAGE_KEYS.EMPLOYEES, employees);
+
+      const posConfig = POSITION_CONFIG[position] || POSITION_CONFIG.other;
+      addLog('royxatdan_otish', "Yangi: " + login + " (" + posConfig.name + ")", login);
+
+      successMsg.style.color = '#00ff88';
+      successMsg.innerHTML = '✅ Muvaffaqiyatli! "' + posConfig.name + '" menyulari ochiladi.';
+
+      setTimeout(() => {
+        showLoginScreen();
+        document.getElementById('loginUsername').value = login;
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginPassword').focus();
+      }, 1800);
+    }
+
+    // ==================== YORDAMCHI ====================
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function escapeJs(str) {
+      if (str === null || str === undefined) return '';
+      return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+    }
+
+    // ==================== KLAVIATURA ====================
+    document.addEventListener('keydown', e => {
+      const gs = document.getElementById('vacationGameScreen');
+      if (gs && !gs.classList.contains('hidden')) {
+        if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp'].includes(e.key)) {
+          e.preventDefault();
+          if (e.key === 'ArrowLeft') movePiece(-1, 0);
+          else if (e.key === 'ArrowRight') movePiece(1, 0);
+          else if (e.key === 'ArrowDown') movePiece(0, 1);
+          else if (e.key === 'ArrowUp') rotatePiece();
+        }
+      }
+      if (e.key === 'Enter') {
+        const ls = document.getElementById('loginScreen');
+        if (ls && !ls.classList.contains('hidden')) login();
+      }
+      if (e.key === 'Escape') {
+        if (isNotifPanelOpen) toggleNotificationPanel();
+        closeSearch();
+      }
+    });
+
+    // ==================== INIT ====================
+    function initDefaultData() {
+      let employees = getData(STORAGE_KEYS.EMPLOYEES);
+      if (!Array.isArray(employees) || employees.length === 0) {
+        employees = [
+          { login: 'admin', password: 'admin123', fullname: 'Admin User', email: 'admin@datasince.uz', phone: '+998901234567', position: 'developer', status: 'active', role: 'employee', createdAt: new Date().toLocaleString('uz-UZ') },
+          { login: 'vacation', password: 'vacation123', fullname: 'Vacation User', email: 'vacation@datasince.uz', phone: '+998901234568', position: 'manager', status: 'vacation', role: 'employee', createdAt: new Date().toLocaleString('uz-UZ') }
+        ];
+        setData(STORAGE_KEYS.EMPLOYEES, employees);
+      }
+      let data = getData(STORAGE_KEYS.DATA);
+      if (!Array.isArray(data) || data.length === 0) {
+        data = [{ id: Date.now() + Math.random(), title: 'Xush kelibsiz', value: 'DataSince v5.0!', createdBy: 'boshliq', createdAt: new Date().toLocaleString('uz-UZ') }];
+        setData(STORAGE_KEYS.DATA, data);
+      }
+      let devices = getData(STORAGE_KEYS.DEVICES);
+      if (!Array.isArray(devices) || devices.length === 0) {
+        devices = [{ id: 'main_server', name: 'Asosiy server', type: 'computer', createdBy: 'boshliq', createdAt: new Date().toLocaleString('uz-UZ') }];
+        setData(STORAGE_KEYS.DEVICES, devices);
+      }
+      logConsole('info', 'DataSince v5.0 initialized');
+    }
+
+    function onReady() {
+      try {
+        initDefaultData();
+        applyTheme();
+        const importFile = document.getElementById('importFile');
+        if (importFile) importFile.addEventListener('change', handleImportFile);
+        updateNotifCount();
+      } catch (e) {
+        logError('init', e.message, e.stack);
+      }
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady);
+    else onReady();
+
+    // ==================== YUKLAB OLISH (SVG LOGO BILAN) ====================
+    function downloadApp() {
+      const logoBase64 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9Ijk1IiBmaWxsPSIjMGExMDI3IiBzdHJva2U9IiMzYjgyZjYiIHN0cm9rZS13aWR0aD0iNCIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iODUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSI1LDUiLz48dGV4dCB4PSIxMDAiIHk9IjEyNSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjcwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzg4OTJiMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VTwvdGV4dD48dGV4dCB4PSIxMzAiIHk9IjEyNSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjcwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzg4OTJiMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+WjwvdGV4dD48cGF0aCBkPSJNMTAwIDIwIEwxMDUgNDAgTDExNSA0NSBMMTA1IDUwIEwxMDAgNzAgTDk1IDUwIEw4NSA0NSBMOTUgNDAgWiIgZmlsbD0iI2ZmZmZmZiIvPjwvc3ZnPg==";
+      let htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      htmlContent = htmlContent.replace('</title>', '</title>\n  <link rel="icon" type="image/svg+xml" href="' + logoBase64 + '">');
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'DataSince_Dastur.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Yuklandi', 'Dastur logotip bilan birga yuklab olindi!', 'success');
+    }
+  </script>
+</body>
+</html>
